@@ -142,6 +142,8 @@ namespace Travel_Journal
 
             // Bekräfta lyckad inloggning
             UI.Success($"Logged in as {username}!");
+            
+            TripService service = new TripService();
 
             // Enkel profilmeny efter inloggning
             while (true)
@@ -151,7 +153,7 @@ namespace Travel_Journal
                     new SelectionPrompt<string>()
                         .Title("[bold cyan]Menu[/]")
                         .HighlightStyle(new Style(Color.Chartreuse1))
-                        .AddChoices("View profile", "Log out"));
+                        .AddChoices("View profile", "Add upcoming trip", "Add previous trip", "Show all trips", "Log out"));
 
                 if (sub == "View profile")
                 {
@@ -167,6 +169,18 @@ namespace Travel_Journal
 
                     // Skriver ut tabellen
                     AnsiConsole.Write(t);
+                }
+                else if (sub == "Add upcoming trip")
+                {
+                    service.AddUpcomingTrip();
+                }
+                else if (sub == "Add previous trip")
+                {
+                    service.AddPreviousTrip();
+                }
+                else if (sub == "Show all trips")
+                {
+                    service.ShowAllTrips();
                 }
                 else break; // Logga ut
             }

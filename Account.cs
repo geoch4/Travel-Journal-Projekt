@@ -14,8 +14,6 @@ namespace Travel_Journal
         public string RecoveryCode { get; set; } = string.Empty; // STEG 1
         public DateTime CreatedAt { get; set; } = default; // STEG 1
 
-        public List<Trip> trips = new List<Trip>();
-        //public List<>
 
 
         public bool Register(string userName, string passWord) 
