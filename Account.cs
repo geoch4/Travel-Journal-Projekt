@@ -7,7 +7,7 @@ using Spectre.Console;
 
 namespace Travel_Journal
 {
-    public class Account
+    public class Account // Klass med attribut för användare och metoder för att registrera, logga in, kolla lösen och användarnamn
     {
         public string UserName { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace Travel_Journal
         public DateTime CreatedAt { get; set; } = default; // STEG 1
 
 
-        public bool Register(string userName, string passWord)
+        public bool Register(string userName, string passWord) 
         {
             var passwordOk = CheckPassword(passWord);
             var userNameOk = CheckUserName(userName);

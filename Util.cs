@@ -17,6 +17,4 @@ namespace Travel_Journal
             return $"{Next4():0000}-{Next4():0000}";
         }
     }
-
-
 }
