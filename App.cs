@@ -141,6 +141,7 @@ namespace Travel_Journal
                             "➕ Add Upcoming Trip",
                             "🧳 Add Previous Trip",
                             "📋 Show All Trips",
+                            "💰 Budget & Savings",
                             "🚪 Log out"
                         )
                 );
@@ -162,6 +163,11 @@ namespace Travel_Journal
                 {
                     service.ShowAllTrips(); // Visa alla resor i tabell
                     Pause();
+                }
+                else if (sub == "💰 Budget & Savings")
+                {
+                    var budgetService = new BudgetService(acc, service);
+                    budgetService.ShowBudgetMenu();
                 }
                 else if (sub == "🚪 Log out")
                 {

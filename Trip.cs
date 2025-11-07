@@ -18,6 +18,8 @@ namespace Travel_Journal
         public decimal PlannedBudget { get; set; }         // Planerad budget
         public string TimeZone { get; set; }               // Tidszon (t.ex. "Europe/Stockholm")
 
+        public decimal RemainingBudget => PlannedBudget - Cost; // Beräknad egenskap för återstående budget
+
         // Hjälpegenskaper
         public bool IsUpcoming => StartDate > DateTime.Now;
         public bool IsCompleted => EndDate < DateTime.Now;

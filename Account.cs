@@ -13,6 +13,7 @@ namespace Travel_Journal
         public string Password { get; set; } = string.Empty;
         public string RecoveryCode { get; set; } = string.Empty; // STEG 1
         public DateTime CreatedAt { get; set; } = default; // STEG 1
+        public decimal Savings { get; set; } = 0m; // STEG 3
 
 
 

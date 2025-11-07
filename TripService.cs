@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Spectre.Console;
 
@@ -307,6 +308,11 @@ namespace Travel_Journal
 
             // Skriv ut total antal resor som avslutning
             AnsiConsole.Write(new Rule($"[grey]Total trips: {trips.Count}[/]"));
+        }
+
+        public List<Trip> GetTrips()
+        {
+            return trips;
         }
     }
 }
