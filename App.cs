@@ -143,6 +143,7 @@ namespace Travel_Journal
                             "📋 Show All Trips",
                             "💰 Budget & Savings",
                             "📊 Statistics",
+                            "🔄 Update/Change Trips",
                             "🚪 Log out"
                         )
                 );
@@ -175,9 +176,12 @@ namespace Travel_Journal
 
                     var statsService = new Statistics(service);
                     statsService.StatsMenu();
-
-
                     Pause();
+                }
+                else if (sub == "🔄 Update/Change Trips")
+                {
+                    var trips = service.GetTrips();
+                    service.UpdateTrips(trips);
                 }
                 else if (sub == "🚪 Log out")
                 {
