@@ -1,32 +1,43 @@
 ﻿using Spectre.Console;
 using System;
+using System.Threading.Tasks;
 
 namespace Travel_Journal
 {
     /// <summary>
-    /// Hanterar vad som händer när en användare är inloggad:
-    /// - visa profil
-    /// - hantera trips
-    /// - budget
-    /// - statistik
-    /// - logga ut
+    /// UserSession körs när en användare är inloggad.
+    /// Här hanteras:
+    /// - profilvisning
+    /// - reshantering (lägga till, visa, uppdatera)
+    /// - budget och statistik
+    /// - AI-förslag via OpenAI
+    /// - utloggning
     /// </summary>
     public class UserSession
     {
+        // Den aktuella inloggade användaren
         private readonly Account _account;
+
+        // TripService hanterar alla resor (CRUD + JSON-lagring)
         private readonly TripService _tripService;
 
+        // === Konstruktor ===
         public UserSession(Account account)
         {
+            // Spara användaren som är inloggad
             _account = account;
+
+            // Skapa TripService som laddar användarens resor baserat på användarnamn
             _tripService = new TripService(account.UserName);
         }
 
-        // 🧭 Startar menyn för inloggad användare
-        public void Start()
+        // === 🧭 Huvudloop för inloggad användare ===
+        // Denna körs tills användaren väljer "Log out"
+        public async Task Start()
         {
             while (true)
             {
+                // 🧾 Skapa en meny med val (Spectre.Console gör det snyggt och färgrikt)
                 var sub = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title($"[bold cyan]Welcome, {_account.UserName}![/] Choose an option:")
@@ -39,77 +50,114 @@ namespace Travel_Journal
                             "💰 Budget & Savings",
                             "📊 Statistics",
                             "🔄 Update/Change Trips",
+                            "🤖✈️ AI Travel Assistant",
                             "🚪 Log out"
                         )
                 );
 
+                // === Menyval: profil ===
                 if (sub == "👤 View Profile")
                 {
                     ShowProfile();
                     Pause();
                 }
+                // === Menyval: ny planerad resa ===
                 else if (sub == "➕ Add Upcoming Trip")
                 {
                     _tripService.AddUpcomingTrip();
                     Pause();
                 }
+                // === Menyval: tidigare resa ===
                 else if (sub == "🧳 Add Previous Trip")
                 {
                     _tripService.AddPreviousTrip();
                     Pause();
                 }
+                // === Menyval: visa alla resor ===
                 else if (sub == "📋 Show All Trips")
                 {
                     _tripService.ShowAllTrips();
                     Pause();
                 }
+                // === Menyval: budget ===
                 else if (sub == "💰 Budget & Savings")
                 {
+                    // Skapa en separat service för budget (kopplad till användare och resor)
                     var budgetService = new BudgetService(_account, _tripService);
                     budgetService.ShowBudgetMenu();
                 }
+                // === Menyval: statistik ===
                 else if (sub == "📊 Statistics")
                 {
                     var statsService = new Statistics(_tripService);
                     statsService.StatsMenu();
                     Pause();
                 }
+                // === Menyval: uppdatera resor ===
                 else if (sub == "🔄 Update/Change Trips")
                 {
                     var trips = _tripService.GetTrips();
                     _tripService.UpdateTrips(trips);
                     Pause();
                 }
-               
+                // === Menyval: AI Travel Assistant ===
+                else if (sub == "🤖✈️ AI Travel Assistant")
+                {
+                    var aiAssistant = new AITravelAssistant();
+                    try
+                    {
+                        // Rensa skärmen för ren AI-prompt
+                        AnsiConsole.Clear();
 
+                        // Vänta tills AI:n har genererat sitt svar (async)
+                        await aiAssistant.ShowAISuggestionAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Visa eventuella fel i AI-delen på ett snyggt sätt
+                        UI.Error($"AI Travel Assistant failed: {ex.Message}");
+                    }
+
+                    // Vänta på ENTER innan menyn visas igen
+                    Pause();
+
+                    // 👈 Viktigt: fortsätt loopen utan att avsluta sessionen
+                    continue;
+                }
+                // === Menyval: logga ut ===
                 else if (sub == "🚪 Log out")
                 {
                     UI.Transition("Logging out...");
                     UI.Info($"Goodbye, {_account.UserName}! 👋");
-                    return;
+                    return; // Avslutar sessionen och går tillbaka till huvudmenyn
                 }
             }
         }
 
-        // 👤 Visar profilinfo
+        // === 👤 Visar användarens profilinformation ===
         private void ShowProfile()
         {
+            // Skapa en tabell med Spectre.Console
             var t = new Table()
                 .Border(TableBorder.Rounded)
                 .BorderStyle(new Style(Color.Grey50));
 
+            // Kolumner
             t.AddColumn("Field");
             t.AddColumn("Value");
 
+            // Lägg till data från kontot
             t.AddRow("Username", _account.UserName);
             t.AddRow("Created", _account.CreatedAt == default ? "—" : _account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
             t.AddRow("Recovery Code", _account.RecoveryCode);
             t.AddRow("Savings", $"{_account.Savings} kr");
 
+            // Skriv ut tabellen i terminalen
             AnsiConsole.Write(t);
         }
 
-        // ⏸️ Enkel paus innan nästa meny
+        // === ⏸️ Enkel paus innan nästa meny ===
+        // Används efter varje val så att användaren hinner läsa resultatet
         private void Pause()
         {
             AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
