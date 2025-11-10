@@ -9,8 +9,6 @@ namespace Travel_Journal
         // === 🚀 Huvudmetod: startar hela programmet ===
         public static void Run()
         {
-            // Säkerställ att mappen för lagring (data/) finns
-            Paths.EnsureDataDir();
 
             // Visa en snygg splashscreen med titel
             UI.Splash();

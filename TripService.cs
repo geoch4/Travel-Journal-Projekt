@@ -14,11 +14,11 @@ namespace Travel_Journal
         // Denna lista håller alla resor som laddas eller läggs till under programmets gång.
         private List<Trip> trips = new();
 
-        // Filvägen till den JSON-fil där användarens resor sparas (t.ex. data/andre_trips.json)
-        private readonly string filePath;
-
         // Användarnamnet som används för att identifiera rätt fil
         private readonly string username;
+
+        // DataStore ansvarar för JSON-hantering (ersätter filePath + manuella metoder)
+        private readonly DataStore<Trip> store;
 
         // === Konstruktor ===
         public TripService(string username)
@@ -26,14 +26,11 @@ namespace Travel_Journal
             // Spara användarnamnet så vi vet vem resorna tillhör
             this.username = username;
 
-            // Skapa mappen "data" om den inte finns
-            Directory.CreateDirectory(Paths.DataDir);
+            // Skapa ett DataStore-objekt som automatiskt sparar i "data/{username}_trips.json"
+            store = new DataStore<Trip>($"{username}_trips.json");
 
-            // Sätt ihop hela sökvägen till användarens personliga JSON-fil
-            filePath = Path.Combine(Paths.DataDir, $"{username}_trips.json");
-
-            // Försök läsa in tidigare resor från filen
-            LoadTrips();
+            // Läs in befintliga resor via DataStore (om filen finns)
+            trips = store.Load();
         }
 
         // === Sparar alla resor till JSON-fil ===
@@ -41,39 +38,13 @@ namespace Travel_Journal
         {
             try
             {
-                // Konvertera listan "trips" till JSON-text med snygg indentering
-                var json = JsonSerializer.Serialize(trips, new JsonSerializerOptions { WriteIndented = true });
-
-                // Skriv JSON-texten till användarens fil
-                File.WriteAllText(filePath, json);
+                // Använd generiska DataStore istället för manuell serialisering
+                store.Save(trips);
             }
             catch (Exception ex)
             {
                 // Om något går fel, visa felmeddelande
                 UI.Error($"Failed to save trips: {ex.Message}");
-            }
-        }
-
-        // === Läser in alla resor från användarens JSON-fil ===
-        private void LoadTrips()
-        {
-            // Kolla först att filen faktiskt finns
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    // Läs in all text från JSON-filen
-                    var json = File.ReadAllText(filePath);
-
-                    // Försök omvandla texten till en lista av Trip-objekt
-                    trips = JsonSerializer.Deserialize<List<Trip>>(json) ?? new();
-                }
-                catch (Exception ex)
-                {
-                    // Om något går fel vid inläsning, visa fel och starta med tom lista
-                    UI.Error($"Failed to load trips: {ex.Message}");
-                    trips = new();
-                }
             }
         }
 
@@ -346,6 +317,7 @@ namespace Travel_Journal
                     break;
                 case "Return Date":
                     UpdateReturnDate();
+                    SaveTrips();
                     break;
                 case "Budget":
                     //Metod för att uppdatera budget på resor.
