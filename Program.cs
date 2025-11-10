@@ -1,4 +1,6 @@
-﻿namespace Travel_Journal
+﻿
+
+namespace Travel_Journal
 {
     internal class Program
     {

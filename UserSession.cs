@@ -80,6 +80,8 @@ namespace Travel_Journal
                     _tripService.UpdateTrips(trips);
                     Pause();
                 }
+               
+
                 else if (sub == "🚪 Log out")
                 {
                     UI.Transition("Logging out...");
@@ -113,5 +115,7 @@ namespace Travel_Journal
             AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
             Console.ReadLine();
         }
+        
     }
 }
+
