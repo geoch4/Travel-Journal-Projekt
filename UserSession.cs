@@ -49,7 +49,7 @@ namespace Travel_Journal
                             "📋 Show All Trips",
                             "💰 Budget & Savings",
                             "📊 Statistics",
-                            "🔄 Update/Change Trips",
+                            "🔄 Edit Trips",
                             "🤖✈️ AI Travel Assistant",
                             "🚪 Log out"
                         )
@@ -94,11 +94,11 @@ namespace Travel_Journal
                     Pause();
                 }
                 // === Menyval: uppdatera resor ===
-                else if (sub == "🔄 Update/Change Trips")
+                else if (sub == "🔄 Edit Trips")
                 {
                     var trips = _tripService.GetTrips();
                     _tripService.UpdateTrips(trips);
-                    Pause();
+                    //Pause();
                 }
                 // === Menyval: AI Travel Assistant ===
                 else if (sub == "🤖✈️ AI Travel Assistant")
@@ -158,7 +158,7 @@ namespace Travel_Journal
 
         // === ⏸️ Enkel paus innan nästa meny ===
         // Används efter varje val så att användaren hinner läsa resultatet
-        private void Pause()
+        public static void Pause()
         {
             AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
             Console.ReadLine();
