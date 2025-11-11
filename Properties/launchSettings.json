@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Travel Journal": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SMTP_HOST": "smtp.gmail.com",
+        "SMTP_PORT": "587",
+        "SMTP_USER": "codecommanders25@gmail.com",
+        "SMTP_PASS": "ynpr wjyl yvur iywk",
+        "SMTP_FROM": "codecommanders25@gmail.com"
+      }
+    }
+  }
+}

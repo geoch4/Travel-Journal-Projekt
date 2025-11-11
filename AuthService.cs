@@ -1,54 +1,121 @@
 ﻿using Spectre.Console;
 using System;
+using System.Threading.Tasks;
+using Travel_Journal.Email;
+using Travel_Journal.Security;
 
 namespace Travel_Journal
 {
     public class AuthService
     {
-        // Registrerar ett nytt konto
-        public bool Register(string username, string password)
+        private readonly TwoFactorService _twoFactor;
+
+        public AuthService()
         {
-            // Kolla om användaren redan finns
+            // Standard: SMTP via miljövariabler
+            _twoFactor = new TwoFactorService(new SmtpEmailSender());
+        }
+        // === NY === Registrering med e-postverifiering (Spectre + 2FA-val)
+        public async Task<bool> RegisterWithEmailVerificationAsync(string username, string password)
+        {
             if (AccountStore.Exists(username))
             {
                 UI.Warn("User already exists!");
                 return false;
             }
 
-            // Skapa nytt konto
             var acc = new Account();
 
-            // Kontrollera att användarnamnet är giltigt
             if (!acc.CheckUserName(username))
             {
                 UI.Error("Username must be at least 1 character long.");
                 return false;
             }
-
-            // Kontrollera att lösenordet uppfyller kraven
             if (!acc.CheckPassword(password))
             {
                 UI.Error("Password requirements: min 6 chars, uppercase, lowercase, number, special.");
                 return false;
             }
 
-            // Sätt grunddata för kontot
+            var email = AnsiConsole.Prompt(
+                new TextPrompt<string>("[cyan]Enter your email for verification:[/] ")
+                    .Validate(input =>
+                        string.IsNullOrWhiteSpace(input) || !input.Contains("@")
+                            ? ValidationResult.Error("[red]Please enter a valid email[/]")
+                            : ValidationResult.Success())
+            );
+
             acc.UserName = username;
             acc.Password = password;
-            acc.RecoveryCode = Util.GenerateRecoveryCode(); // Skapar återställningskod
-            acc.CreatedAt = DateTime.UtcNow; // Sparar när kontot skapades
+            acc.Email = email;
+            acc.EmailVerified = false;
+            acc.TwoFactorEnabled = false;
+            acc.RecoveryCode = Util.GenerateRecoveryCode();
+            acc.CreatedAt = DateTime.UtcNow;
 
-            // Spara till filen users.json
+            // Skicka verifikationskod (wrappar utan WithStatusAsync)
+            bool sent = false;
+            UI.WithStatus("Sending verification email...", () =>
+            {
+                try
+                {
+                    // blockera sync i status-lambdan (ingen await här)
+                    sent = _twoFactor.SendEmailCodeAsync(acc, "Verifiera din e-post")
+                                     .GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    UI.Error("Failed to send verification email: " + ex.Message);
+                    sent = false;
+                }
+            });
+
+            if (!sent) return false;
+
+            bool verified = false;
+            for (int attempt = 1; attempt <= 3; attempt++)
+            {
+                var code = AnsiConsole.Prompt(
+                    new TextPrompt<string>($"[yellow]Enter the 6-digit code (attempt {attempt}/3):[/] ")
+                        .PromptStyle("white")
+                );
+
+                if (_twoFactor.VerifyCode(acc, code))
+                {
+                    verified = true;
+                    break;
+                }
+                UI.Warn("Wrong code.");
+            }
+
+            if (!verified)
+            {
+                UI.Error("Email not verified.");
+                _twoFactor.ClearPending(acc);
+                return false;
+            }
+
+            acc.EmailVerified = true;
+            _twoFactor.ClearPending(acc);
+
             UI.WithStatus("Saving account...", () =>
             {
                 AccountStore.Add(acc);
                 AccountStore.Save();
             });
 
-            // Bekräftelse till användaren
+            var enable2fa = AnsiConsole.Confirm("Enable email 2FA for login?");
+            if (enable2fa)
+            {
+                acc.TwoFactorEnabled = true;
+                AccountStore.Update(acc);
+                AccountStore.Save();
+            }
+
             var panel = new Panel($"""
-            [green]✅ User {acc.UserName} created successfully![/]
+            [green]✅ User {acc.UserName} created & email verified![/]
             [yellow]Recovery code:[/] [bold]{acc.RecoveryCode}[/]
+            [grey]2FA enabled:[/] {(acc.TwoFactorEnabled ? "[green]Yes[/]" : "[yellow]No[/]")}
             """)
             {
                 Border = BoxBorder.Rounded,
@@ -59,10 +126,9 @@ namespace Travel_Journal
             return true;
         }
 
-        // Loggar in en användare
+        // === UPPDATERAD === Inloggning med villkorlig 2FA (endast EN definition)
         public Account? Login(string username, string password)
         {
-            // Hämta kontot från AccountStore
             var acc = AccountStore.Get(username);
 
             if (acc == null)
@@ -71,28 +137,76 @@ namespace Travel_Journal
                 return null;
             }
 
-            // Kolla om lösenordet stämmer
-            if (acc.UserName == username && acc.Password == password)
+            if (!(acc.UserName == username && acc.Password == password))
             {
-                UI.Success($"Logged in as [bold]{username}[/]! ✈️");
-                return acc;
+                UI.Error("Wrong username or password.");
+                return null;
             }
 
-            UI.Error("Wrong username or password.");
-            return null;
+            // Kräver 2FA?
+            if (acc.TwoFactorEnabled)
+            {
+                if (!acc.EmailVerified || string.IsNullOrWhiteSpace(acc.Email))
+                {
+                    UI.Warn("2FA is enabled but email is not verified. Disabling 2FA for safety.");
+                    acc.TwoFactorEnabled = false;
+                    AccountStore.Update(acc);
+                    AccountStore.Save();
+                    UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+                    return acc;
+                }
+
+                bool sent = false;
+                UI.WithStatus("Sending login code...", () =>
+                {
+                    try
+                    {
+                        sent = _twoFactor.SendEmailCodeAsync(acc, "Inloggningskod")
+                                         .GetAwaiter().GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        UI.Error("Email send error: " + ex.Message);
+                        sent = false;
+                    }
+                });
+
+                if (!sent) return null;
+
+                for (int attempt = 1; attempt <= 3; attempt++)
+                {
+                    var code = AnsiConsole.Prompt(
+                        new TextPrompt<string>($"[yellow]Enter the 6-digit code (attempt {attempt}/3):[/] ")
+                    );
+
+                    if (_twoFactor.VerifyCode(acc, code))
+                    {
+                        _twoFactor.ClearPending(acc);
+                        UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+                        return acc;
+                    }
+                    UI.Warn("Wrong code.");
+                }
+
+                UI.Error("Too many attempts.");
+                _twoFactor.ClearPending(acc);
+                return null;
+            }
+
+            // Ingen 2FA
+            UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+            return acc;
         }
 
-        // Återställer ett glömt lösenord
+        // === EN (1) definition av ResetPassword ===
         public void ResetPassword(string username, string recoveryCode, string newPassword, string confirmPassword)
         {
-            // Kontrollera att båda lösenorden är samma
             if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
             {
                 UI.Error("Passwords do not match.");
                 return;
             }
 
-            // Hämta kontot
             var acc = AccountStore.Get(username);
             if (acc == null)
             {
@@ -100,21 +214,18 @@ namespace Travel_Journal
                 return;
             }
 
-            // Kontrollera återställningskoden
             if (!string.Equals(acc.RecoveryCode, recoveryCode, StringComparison.Ordinal))
             {
                 UI.Error("Wrong recovery code.");
                 return;
             }
 
-            // Kontrollera att nya lösenordet uppfyller kraven
             if (!acc.CheckPassword(newPassword))
             {
                 UI.Error("New password does not meet the requirements.");
                 return;
             }
 
-            // Uppdatera lösenordet och skapa ny återställningskod
             UI.WithStatus("Updating password...", () =>
             {
                 acc.Password = newPassword;
@@ -123,7 +234,6 @@ namespace Travel_Journal
                 AccountStore.Save();
             });
 
-            // Bekräftelse till användaren
             UI.Success("Password reset! A new recovery code has been generated.");
         }
     }

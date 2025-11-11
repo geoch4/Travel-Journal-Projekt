@@ -120,5 +120,12 @@ namespace Travel_Journal
             // Avslutar med radbrytning efter texten
             AnsiConsole.WriteLine();
         }
+        // I UI-klassen
+        public static T WithStatus<T>(string message, Func<T> action)
+        {
+            T result = default!;
+            WithStatus(message, () => { result = action(); });
+            return result;
+        }
     }
 }
