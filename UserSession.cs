@@ -21,6 +21,9 @@ namespace Travel_Journal
         // TripService hanterar alla resor (CRUD + JSON-lagring)
         private readonly TripService _tripService;
 
+       
+       
+
         // === Konstruktor ===
         public UserSession(Account account)
         {
@@ -50,6 +53,7 @@ namespace Travel_Journal
                             "📊 Statistics",
                             "🔄 Edit Trips",
                             "🤖✈️ AI Travel Assistant",
+                            "🔧 Support & Help",
                             "🚪 Log out"
                         )
                 );
@@ -119,6 +123,13 @@ namespace Travel_Journal
 
                     // 👈 Viktigt: fortsätt loopen utan att avsluta sessionen
                     continue;
+                }
+
+                else if (sub == "🔧 Support & Help")
+                {
+                    var _supportService = new SupportService();
+                    _supportService.ShowSupportMenu();
+                    Pause();
                 }
                 // === Menyval: logga ut ===
                 else if (sub == "🚪 Log out")

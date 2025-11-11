@@ -143,5 +143,7 @@ namespace Travel_Journal
 
             AnsiConsole.Write(table);
         }
+
     }
 }
+    
