@@ -44,8 +44,7 @@ namespace Travel_Journal
                         .HighlightStyle(new Style(Color.Cyan1))
                         .AddChoices(
                             "👤 View Profile",
-                            "➕ Add Upcoming Trip",
-                            "🧳 Add Previous Trip",
+                            "📘 Add Trips",
                             "📋 Show All Trips",
                             "💰 Budget & Savings",
                             "📊 Statistics",
@@ -61,18 +60,15 @@ namespace Travel_Journal
                     ShowProfile();
                     Pause();
                 }
-                // === Menyval: ny planerad resa ===
-                else if (sub == "➕ Add Upcoming Trip")
+                // === Menyval: för både nya "kommande resor" och "gamla resor" ===
+                else if (sub == "📘 Add Trips")
                 {
-                    _tripService.AddUpcomingTrip();
+                    
+                    _tripService.ShowManageTripsMenu();
                     Pause();
+                    
                 }
-                // === Menyval: tidigare resa ===
-                else if (sub == "🧳 Add Previous Trip")
-                {
-                    _tripService.AddPreviousTrip();
-                    Pause();
-                }
+              
                 // === Menyval: visa alla resor ===
                 else if (sub == "📋 Show All Trips")
                 {
