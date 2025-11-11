@@ -203,6 +203,41 @@ namespace Travel_Journal
             AnsiConsole.Write(panel);
         }
 
+        public void ShowManageTripsMenu() 
+        {
+            while(true)
+    {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[aqua]Add Trips[/]")
+                        .PageSize(8)
+                        .AddChoices(new[]
+                        {
+                    "➕ Add Upcoming Trip",
+                    "🕰 Add Previous Trip",
+              
+                    "↩ Back"
+                        })
+                );
+
+                switch (choice)
+                {
+                    case "➕ Add Upcoming Trip":
+                        AddUpcomingTrip();
+                        UserSession.Pause();
+                        break;
+
+                    case "🕰 Add Previous Trip":
+                        AddPreviousTrip();
+                        UserSession.Pause();
+                        break;
+
+                    case "↩ Back":
+                        return; // tillbaka till huvudmenyn
+                }
+            }
+        }
+        
         // === Visar alla resor i tabellform ===
         public void ShowAllTrips()
         {
