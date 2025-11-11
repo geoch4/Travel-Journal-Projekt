@@ -1,6 +1,4 @@
 ﻿using Spectre.Console;
-using System;
-using System.Threading.Tasks;
 
 namespace Travel_Journal
 {
@@ -41,8 +39,8 @@ namespace Travel_Journal
                         var pass = AnsiConsole
                             .Prompt(new TextPrompt<string>("Password:").Secret());
 
-                        // Skicka vidare till AuthService för att skapa kontot
-                        auth.Register(user, pass);
+                        ////Frågar efter e-post för verifiering
+                        await auth.RegisterWithEmailVerificationAsync(user, pass);
                         break;
 
                     case "Login":

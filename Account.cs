@@ -10,6 +10,12 @@ namespace Travel_Journal
         public string RecoveryCode { get; set; } = string.Empty; // Återställningskod
         public DateTime CreatedAt { get; set; } = default; // Tid kontot skapades
         public decimal Savings { get; set; } = 0m; // Sparkonto
+        public string? Email { get; set; }
+        public bool EmailVerified { get; set; }
+        public bool TwoFactorEnabled { get; set; }
+
+        public string? PendingTwoFactorCodeHash { get; set; }
+        public DateTime? PendingTwoFactorExpiresUtc { get; set; }
 
         // === 🔑 Validerar lösenord enligt regler ===
         public bool CheckPassword(string passWord)
