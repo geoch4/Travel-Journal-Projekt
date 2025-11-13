@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace Travel_Journal
 {
@@ -12,6 +13,8 @@ namespace Travel_Journal
         // === 🚀 Huvudmetod: startar hela programmet ===
         public static async Task Run()
         {
+            //Lägger till en loggrad
+            Logg.Log("Application started."); //Loggar att appen har startat-testar loggern med en enkel logg vid start
             // 🖼️ Visar en snygg startskärm / splash med animation och titel
             UI.Splash();
 

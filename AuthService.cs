@@ -134,13 +134,15 @@ namespace Travel_Journal
             if (acc == null)
             {
                 UI.Error("Unknown username.");
+                Logg.Log($"Login failed: Unknown User ´{username}´");//Logg för Unknown User
                 return null;
             }
 
             if (!(acc.UserName == username && acc.Password == password))
             {
                 UI.Error("Wrong username or password.");
-                return null;
+                Logg.Log($"Login failed:Wrong password for ´{username}`"); //Logg för fel password
+                return null; 
             }
 
             // Kräver 2FA?
@@ -153,6 +155,7 @@ namespace Travel_Journal
                     AccountStore.Update(acc);
                     AccountStore.Save();
                     UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+                    Logg.Log($"User ´{username}´ logged in"); //logg för lyckad inloggning utan 2FA fördjupning
                     return acc;
                 }
 
