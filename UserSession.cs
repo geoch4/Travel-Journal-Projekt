@@ -69,8 +69,6 @@ namespace Travel_Journal
                 {
                     
                     _tripService.ShowManageTripsMenu();
-                    Pause();
-                    
                 }
               
                 // === Menyval: visa alla resor ===
@@ -91,7 +89,6 @@ namespace Travel_Journal
                 {
                     var statsService = new Statistics(_tripService);
                     statsService.StatsMenu();
-                    Pause();
                 }
                 // === Menyval: uppdatera resor ===
                 else if (sub == "🔄 Edit Trips")

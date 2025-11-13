@@ -127,5 +127,20 @@ namespace Travel_Journal
             WithStatus(message, () => { result = action(); });
             return result;
         }
+        public static string? AskWithBack(string prompt)
+        {
+            var input = AnsiConsole.Prompt(
+                new TextPrompt<string>($"[green]{prompt}[/] ([red]Press 0 to go back[/]):")
+                    .PromptStyle("white")
+            );
+
+            if (input == "0")
+            {
+                UI.Warn("Going back...");
+                return null; // SIGNAL till koden att användaren avbröt
+            }
+
+            return input;
+        }
     }
 }

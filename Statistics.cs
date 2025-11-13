@@ -54,7 +54,9 @@ namespace Travel_Journal
                         .AddChoices(
                             "📈 Sort by rating (highest to lowest)",
                             "📉 Sort by rating (lowest to highest)",
-                            "💰 Sort by price (highest to lowest)"
+                            "💰 Sort by price (highest to lowest)",
+                            "🔙 Back to Main Menu"
+
                         )
                 );
             switch (choice)

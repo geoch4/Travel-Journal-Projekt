@@ -38,7 +38,9 @@ namespace Travel_Journal
                         UI.Transition("Register Account"); // Snygg övergångstext
 
                         // Fråga efter användarnamn och lösenord
-                        var user = AnsiConsole.Ask<string>("Username:");
+                        var user = UI.AskWithBack("Username");
+                        if (user == null)
+                            break; // eller gå till föregående meny
                         var pass = AnsiConsole
                             .Prompt(new TextPrompt<string>("Password:").Secret());
 
@@ -51,12 +53,14 @@ namespace Travel_Journal
                         UI.Transition("Login");
 
                         // Fråga användaren om inloggningsuppgifter
-                        var u = AnsiConsole.Ask<string>("Username:");
+                        var username = UI.AskWithBack("Username");
+                        if (username == null)
+                            break; // eller gå till föregående meny
                         var p = AnsiConsole
                             .Prompt(new TextPrompt<string>("Password:").Secret());
 
                         // Försök hitta matchande konto via AuthService
-                        var acc = auth.Login(u, p);
+                        var acc = auth.Login(username, p);
 
                         if (acc != null)
                         {
@@ -75,7 +79,9 @@ namespace Travel_Journal
                         UI.Transition("Forgot Password");
 
                         // Fråga användaren om användarnamn, återställningskod och nytt lösenord
-                        var name = AnsiConsole.Ask<string>("Username:");
+                        var name = UI.AskWithBack("Username");
+                        if (name == null)
+                            break; // eller gå till föregående meny
                         var code = AnsiConsole.Ask<string>("Recovery code:");
                         var newPwd = AnsiConsole
                             .Prompt(new TextPrompt<string>("New password:").Secret());

@@ -117,7 +117,10 @@ Give me 3 parts:
             UI.Transition("AI Travel Assistant 🤖✈️");
 
             // Be användaren om resepreferenser
-            var budget = AnsiConsole.Ask<decimal>("What is your [green]budget (SEK)[/]?");
+            var budgetstring = UI.AskWithBack("What is your [bold]budget[/]?");
+            if (budgetstring == null)
+                return; // eller gå till föregående meny
+            decimal budget = decimal.Parse(budgetstring);
             var type = AnsiConsole.Ask<string>("What kind of [blue]trip[/] do you want? (e.g. city, beach, adventure, culture)");
             var days = AnsiConsole.Ask<int>("How many [yellow]days[/] do you plan to travel?");
 

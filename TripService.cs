@@ -94,7 +94,9 @@ namespace Travel_Journal
             UI.Transition("Add Upcoming Trip ✈️");
 
             // Frågor till användaren
-            string country = AnsiConsole.Ask<string>("Which [bold]country[/] are you visiting?");
+            var country = UI.AskWithBack("Which [bold]country[/] are you visiting");
+            if (country == null)
+                return; // eller gå till föregående meny
             string city = AnsiConsole.Ask<string>("Which [bold]city[/]?");
             decimal budget = AskDecimal("What is your planned [bold]budget[/]?");
 
@@ -147,7 +149,9 @@ namespace Travel_Journal
             UI.Transition("Add Previous Trip 🧳");
 
             // Fråga användaren om detaljer från resan
-            string country = AnsiConsole.Ask<string>("Which [bold]country[/] did you visit?");
+            var country = UI.AskWithBack("Which [bold]country[/] did you visit");
+            if (country == null)
+                return; // eller gå till föregående meny
             string city = AnsiConsole.Ask<string>("Which [bold]city[/]?");
             decimal budget = AskDecimal("What was your planned [bold]budget[/]?");
             decimal cost = AskDecimal("What was the total [bold]cost[/]?");
@@ -223,12 +227,10 @@ namespace Travel_Journal
                 {
                     case "➕ Add Upcoming Trip":
                         AddUpcomingTrip();
-                        UserSession.Pause();
                         break;
 
                     case "🕰 Add Previous Trip":
                         AddPreviousTrip();
-                        UserSession.Pause();
                         break;
 
                     case "↩ Back":
