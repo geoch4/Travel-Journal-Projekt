@@ -1,48 +1,160 @@
 ﻿using Spectre.Console;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Travel_Journal
 {
+    /// <summary>
+    /// SupportService hanterar allt som rör "Support & Hjälp"-menyn.
+    /// Inkluderar visning av kontaktinfo, villkor, FAQ samt radering av konto.
+    /// </summary>
     public class SupportService
     {
-        public void DeleteAccountFlow()
+        // === 🗑️ Radera konto och tillhörande data ===
+        // Returnerar true om kontot har raderats (så att UserSession kan avslutas).
+        public bool DeleteAccountFlow(Account account)
         {
-            AnsiConsole.MarkupLine("[red bold]⚠ WARNING[/]");
-            AnsiConsole.MarkupLine("[red]This will permanently delete your account and all trips.[/]");
-            AnsiConsole.MarkupLine("");
+            UI.Transition("⚠ Account Deletion");
 
+            AnsiConsole.MarkupLine("[red bold]This will permanently delete your account and all saved trips.[/]");
+            AnsiConsole.WriteLine();
+
+            // --- Första bekräftelsen ---
             var confirm = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[yellow]Are you sure?[/]")
+                    .Title("[yellow]Are you sure you want to continue?[/]")
+                    .HighlightStyle(new Style(Color.Red))
                     .AddChoices("Yes, delete my account", "No, cancel")
             );
 
             if (confirm == "No, cancel")
-                return;
-
-            var final = AnsiConsole.Ask<string>("[red]Type DELETE to confirm:[/]");
-
-            if (final.ToUpper() != "DELETE")
             {
-                AnsiConsole.MarkupLine("[yellow]Cancelled.[/]");
-                return;
+                UI.Info("Deletion cancelled.");
+                return false;
             }
 
-            // här ropar du ut din riktiga radering
-            // t.ex. _accountService.DeleteCurrentAccount();
+            // --- Extra säkerhetskontroll ---
+            var final = AnsiConsole.Ask<string>("[red]Type delete to confirm:[/]");
+            if (!string.Equals(final, "delete", StringComparison.OrdinalIgnoreCase))
+            {
+                UI.Warn("Cancelled — confirmation text didn’t match.");
+                return false;
+            }
 
-            AnsiConsole.MarkupLine("[green]✅ Account deleted.[/]");
+            try
+            {
+                string username = account.UserName;
+
+                // === Spinner under själva raderingen ===
+                UI.WithStatus("Deleting account and data...", () =>
+                {
+                    // --- Ta bort användarens resefil ---
+                    string tripFile = Path.Combine(Paths.DataDir, $"{username}_trips.json");
+                    if (File.Exists(tripFile))
+                    {
+                        File.Delete(tripFile);
+                        UI.Info($"Deleted [yellow]{Path.GetFileName(tripFile)}[/]");
+                    }
+
+
+                    // === 🧩 Laddar in, filtrerar och sparar kontodata ===
+                    // Skapar ett DataStore-objekt som hanterar alla användarkonton.
+                    // Paths.UsersFile pekar på den centrala användarfilen (t.ex. "data/users.json")
+                    var store = new DataStore<Account>(Paths.UsersFile);
+
+                    // Läser in hela listan med alla konton från filen (alla registrerade användare)
+                    var accounts = store.Load();
+
+                    // Filtrerar bort det konto som ska tas bort (behåll alla utom det med matchande användarnamn)
+                    var updated = accounts
+                        .Where(a => a.UserName != username) // LINQ: behåll alla konton där UserName ≠ det vi raderar
+                        .ToList(); // Gör om resultatet till en ny lista
+
+                    // Sparar den uppdaterade listan tillbaka till JSON-filen.
+                    // Resultatet: filen skrivs över utan det raderade kontot.
+                    store.Save(updated);
+
+                    // Kort paus för snygg effekt
+                    System.Threading.Thread.Sleep(300);
+                });
+
+                // === Bekräftelse ===
+                UI.Success("✅ Account and all related data deleted successfully.");
+                UI.Info("You will now be logged out...");
+
+                // Vänta kort så användaren hinner läsa
+                AnsiConsole.MarkupLine("\n[grey]Press ENTER to exit...[/]");
+                Console.ReadLine();
+
+                // Returnerar true → signalerar att kontot är raderat
+                return true;
+            }
+            catch (Exception ex)
+            {
+                UI.Error($"Failed to delete account: {ex.Message}");
+                return false;
+            }
+        }
+        public void FAQInfo()
+        {
+            AnsiConsole.MarkupLine("[yellow][b]Frequently Asked Questions[/][/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]1. How is my data stored?[/]");
+            AnsiConsole.MarkupLine("[grey]All data is saved locally on your device in a secure JSON file. Nothing is uploaded to external servers.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]2. Can I delete my account?[/]");
+            AnsiConsole.MarkupLine("[grey]Yes. You can permanently delete your account and all associated trips through the 'Delete Account' option in the Support menu.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]3. Is my information shared with anyone?[/]");
+            AnsiConsole.MarkupLine("[grey]No. Your information is never shared, distributed, or transmitted elsewhere.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]4. What should I do if I encounter a bug?[/]");
+            AnsiConsole.MarkupLine("[grey]You can report issues through 'Report a Problem' in the Support menu or contact our support team directly.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]5. Can multiple users use the same device?[/]");
+            AnsiConsole.MarkupLine("[grey]Yes. The application supports multiple user accounts on the same device as long as each account is created separately.[/]\n");
+
+            AnsiConsole.MarkupLine("[yellow]If you have additional questions, please contact our support team.[/]");
         }
 
-        // Add this method to fix CS1061
-        
-        
-       public void ShowSupportMenu()
+        public void EmailInfo()
+        {
+            AnsiConsole.MarkupLine("You can reach us at: [bold aqua]codecommanders25@gmail.com[/]");
+            AnsiConsole.MarkupLine("\n[grey]Our team will review your inquiry and respond as promptly as possible.[/]");
+        }
+
+        public void TermsAndPrivacy()
+        {
+            AnsiConsole.MarkupLine(@"
+[blue bold]📜 Terms & Privacy[/]
+
+Your data in [bold]Travel Journal[/] is stored locally on your device.  
+Nothing is uploaded or shared externally.  
+
+[b]We store:[/]
+• Your account info  
+• Your trips and notes  
+• Budget & statistics  
+
+[b]You control your data:[/]
+• You can edit or delete your account anytime  
+• Deleting your account removes all trips permanently  
+
+[b]Security:[/]
+Your data is saved as local JSON files.  
+Protect your device if your information is sensitive.
+
+[yellow]Thank you for using Travel Journal![/]
+");
+        }
+
+
+        // === 💬 Support & Hjälpmeny ===
+        // Returnerar true om användaren valt att radera sitt konto (så att sessionen kan avslutas).
+        public bool ShowSupportMenu(Account account)
         {
             while (true)
             {
@@ -50,69 +162,49 @@ namespace Travel_Journal
                     new SelectionPrompt<string>()
                         .Title("[aqua]🛟 Support & Help[/]")
                         .PageSize(7)
+                        .HighlightStyle(new Style(Color.Cyan1))
                         .AddChoices(new[]
                         {
-                    "📩 Contact Support",
-                    "❓ FAQ",
-                    "📝 Report a Problem",
-                    "📃 Terms & Privacy",
-                    "🗑 Delete Account",
-                    "↩ Back"
+                            "📩 Contact Support",
+                            "❓ FAQ - Frequently Asked Questions",
+                            "📃 Terms & Privacy",
+                            "🗑  Delete Account",
+                            "↩ Back"
                         })
                 );
 
                 switch (choice)
                 {
                     case "📩 Contact Support":
-                        AnsiConsole.MarkupLine("[green]Email: codecommanders25@gmail.com[/]");
+                        AnsiConsole.Clear();
+                        EmailInfo();
                         UserSession.Pause();
                         break;
 
-                    case "❓ FAQ":
-                        AnsiConsole.MarkupLine("[yellow]Common questions will appear here...[/]");
-                        UserSession.Pause();
-                        break;
-
-                    case "📝 Report a Problem":
-                        AnsiConsole.MarkupLine("[red]Describe the issue...[/]");
+                    case "❓ FAQ - Frequently Asked Questions":
+                        AnsiConsole.Clear();
+                        FAQInfo();
                         UserSession.Pause();
                         break;
 
                     case "📃 Terms & Privacy":
-                        AnsiConsole.MarkupLine(@"
-                            [blue]
-                            [b]Terms & Privacy[/]
-
-                            Your data in Travel Journal is stored locally on your device.
-                            Nothing is uploaded, shared, or sent to any external server.
-
-                            [b]What we store:[/]
-                            • Your account information  
-                            • Your trips and travel notes  
-                            • Budget and planning details  
-
-                            [b]You control your data:[/]
-                            • You can edit or delete your account at any time  
-                            • Deleting your account removes all your trips permanently  
-
-                            [b]Security:[/]
-                            Your information is saved in a local JSON file.  
-                            Make sure you protect your device if your data is sensitive.
-
-                            Thank you for using Travel Journal!  
-                            [/]");
+                        AnsiConsole.Clear();
+                        TermsAndPrivacy();
                         UserSession.Pause();
                         break;
 
-                    case "🗑 Delete Account":
-                        DeleteAccountFlow();
+                    case "🗑  Delete Account":
+                        AnsiConsole.Clear();
+                        bool deleted = DeleteAccountFlow(account);
+                        if (deleted)
+                            return true; // 🔹 Avsluta hela sessionen efter deletion
                         UserSession.Pause();
                         break;
 
                     case "↩ Back":
-                        return;
+                        return false; // 🔹 Tillbaka utan att avsluta sessionen
                 }
             }
-        } 
+        }
     }
 }
