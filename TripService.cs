@@ -45,6 +45,7 @@ namespace Travel_Journal
             {
                 // Om något går fel, visa felmeddelande
                 UI.Error($"Failed to save trips: {ex.Message}");
+                Logg.Log($"ERROR saving trips for ´{username}´:{ex.Message}");// Logg som loggar fel vis sparning av resor
             }
         }
 
@@ -53,15 +54,19 @@ namespace Travel_Journal
         {
             while (true)
             {
+                string input = AnsiConsole.Ask<string>(message);
                 try
                 {
-                    // Spectre.Console hanterar input snyggt med färger och validering
-                    return AnsiConsole.Ask<decimal>(message);
+                    return decimal.Parse(input);
+                   
                 }
-                catch
+                catch(Exception ex)
                 {
+
                     // Om användaren skriver något ogiltigt (t.ex. bokstäver) visas fel
-                    UI.Error("Invalid number. Try again.");
+                    Logg.Log($"⚠️ {input} {ex}");
+                    
+                    UI.Error("⚠️ not a number");
                 }
             }
         }
