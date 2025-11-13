@@ -9,7 +9,6 @@ namespace Travel_Journal
         public string Country { get; set; }                // Land
         public string City { get; set; }                   // Stad
         public decimal Cost { get; set; }                  // Faktisk kostnad
-        public string Currency { get; set; }               // Valuta (t.ex. SEK, USD)
         public DateTime StartDate { get; set; }            // Startdatum för resan
         public DateTime EndDate { get; set; }              // Slutdatum för resan
         public int NumberOfPassengers { get; set; }        // Antal personer

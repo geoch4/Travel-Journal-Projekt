@@ -91,7 +91,6 @@ namespace Travel_Journal
             // Frågor till användaren
             string country = AnsiConsole.Ask<string>("Which [bold]country[/] are you visiting?");
             string city = AnsiConsole.Ask<string>("Which [bold]city[/]?");
-            string currency = AnsiConsole.Ask<string>("What [bold]currency[/]? (e.g. SEK, USD, EUR)");
             decimal budget = AskDecimal("What is your planned [bold]budget[/]?");
 
             // Kolla så att datumen är logiska (start före slut)
@@ -114,7 +113,6 @@ namespace Travel_Journal
             {
                 Country = country,
                 City = city,
-                Currency = currency,
                 PlannedBudget = budget,
                 StartDate = startDate,
                 EndDate = endDate,
@@ -129,7 +127,7 @@ namespace Travel_Journal
             // Bekräftelse till användaren
             var panel = new Panel(
                 $"[green]✅ Trip to [bold]{city}, {country}[/] added successfully![/]\n" +
-                $"[grey]Budget:[/] {budget} {currency}\n" +
+                $"[grey]Budget:[/] {budget}\n" +
                 $"[grey]Dates:[/] {startDate:yyyy-MM-dd} → {endDate:yyyy-MM-dd}")
             {
                 Border = BoxBorder.Rounded,
@@ -173,7 +171,6 @@ namespace Travel_Journal
             {
                 Country = country,
                 City = city,
-                Currency = currency,
                 Cost = cost,
                 PlannedBudget = budget,
                 StartDate = startDate,
@@ -272,8 +269,8 @@ namespace Travel_Journal
             foreach (var trip in trips.OrderBy(t => t.StartDate))
             {
                 string dateRange = $"{trip.StartDate:yyyy-MM-dd} → {trip.EndDate:yyyy-MM-dd}";
-                string budget = $"{trip.PlannedBudget} {trip.Currency}";
-                string cost = trip.Cost > 0 ? $"{trip.Cost} {trip.Currency}" : "[grey]—[/]";
+                string budget = $"{trip.PlannedBudget}";
+                string cost = trip.Cost > 0 ? $"{trip.Cost}" : "[grey]—[/]";
                 string rating = trip.Score > 0 ? $"{trip.Score}/5" : "[grey]—[/]";
                 string review = string.IsNullOrWhiteSpace(trip.Review) ? "[grey]No review[/]" : trip.Review;
                 string passengers = $"{trip.NumberOfPassengers}";
@@ -524,7 +521,7 @@ namespace Travel_Journal
                     new SelectionPrompt<Trip>()
                         .Title("[bold]Select a trip to update its budget:[/]")
                         .HighlightStyle(new Style(Color.DeepSkyBlue1))
-                        .UseConverter(t => $"{t.City}, {t.Country} ({t.StartDate:yyyy-MM-dd} - {t.EndDate:yyyy-MM-dd}) | Budget: {t.PlannedBudget} {t.Currency}")
+                        .UseConverter(t => $"{t.City}, {t.Country} ({t.StartDate:yyyy-MM-dd} - {t.EndDate:yyyy-MM-dd}) | Budget: {t.PlannedBudget}")
                         .AddChoices(updatedTrips)
                 );
 
@@ -566,7 +563,7 @@ namespace Travel_Journal
                     new SelectionPrompt<Trip>()
                         .Title("[bold]Select a trip to update its cost:[/]")
                         .HighlightStyle(new Style(Color.DeepSkyBlue1))
-                        .UseConverter(t => $"{t.City}, {t.Country} ({t.StartDate:yyyy-MM-dd} - {t.EndDate:yyyy-MM-dd}) | Cost: {t.Cost} {t.Currency}")
+                        .UseConverter(t => $"{t.City}, {t.Country} ({t.StartDate:yyyy-MM-dd} - {t.EndDate:yyyy-MM-dd}) | Cost: {t.Cost}")
                         .AddChoices(updatedTrips)
                 );
 

@@ -111,8 +111,8 @@ namespace Travel_Journal
             foreach (var trip in trips)
             {
                 string destination = $"{trip.City}, {trip.Country}";
-                string budget = $"{trip.PlannedBudget} {trip.Currency}";
-                string cost = trip.Cost > 0 ? $"{trip.Cost} {trip.Currency}" : "[grey]—[/]";
+                string budget = $"{trip.PlannedBudget}";
+                string cost = trip.Cost > 0 ? $"{trip.Cost}" : "[grey]—[/]";
 
                 string status;
                 Color color;
