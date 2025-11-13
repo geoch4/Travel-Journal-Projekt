@@ -125,12 +125,20 @@ namespace Travel_Journal
                     continue;
                 }
 
+                // === 🔧 Menyval: Support & Hjälp ===
                 else if (sub == "🔧 Support & Help")
                 {
-                    var _supportService = new SupportService();
-                    _supportService.ShowSupportMenu();
-                    Pause();
+                    // Skapar en ny instans av SupportService
+                    var support = new SupportService();
+
+                    // Visar supportmenyn och skickar med aktuell användare (_account)
+                    bool exit = support.ShowSupportMenu(_account);
+
+                    // Om användaren raderade sitt konto (ShowSupportMenu returnerar true)
+                    if (exit)
+                        return; // Avsluta hela UserSession.Start() → användaren loggas ut och återgår till huvudmenyn
                 }
+
                 // === Menyval: logga ut ===
                 else if (sub == "🚪 Log out")
                 {
@@ -169,6 +177,7 @@ namespace Travel_Journal
         {
             AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
             Console.ReadLine();
+            AnsiConsole.Clear();
         }
         
     }
