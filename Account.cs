@@ -16,6 +16,9 @@ namespace Travel_Journal
 
         public string? PendingTwoFactorCodeHash { get; set; }
         public DateTime? PendingTwoFactorExpiresUtc { get; set; }
+        public string? DreamDestination { get; set; }
+        public decimal? DreamBudget { get; set; }
+
 
         // === 🔑 Validerar lösenord enligt regler ===
         public bool CheckPassword(string passWord)

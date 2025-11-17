@@ -152,17 +152,17 @@ namespace Travel_Journal
             // Skapa en tabell med Spectre.Console
             var t = new Table()
                 .Border(TableBorder.Rounded)
-                .BorderStyle(new Style(Color.Grey50));
+                .BorderStyle(new Style(Color.DarkViolet));
 
             // Kolumner
-            t.AddColumn("Field");
-            t.AddColumn("Value");
+            t.AddColumn("Attribute");
+            t.AddColumn("Details");
 
             // Lägg till data från kontot
-            t.AddRow("Username", _account.UserName);
-            t.AddRow("Created", _account.CreatedAt == default ? "—" : _account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
-            t.AddRow("Recovery Code", _account.RecoveryCode);
-            t.AddRow("Savings", $"{_account.Savings} kr");
+            t.AddRow("Username:", _account.UserName);
+            t.AddRow("Created:", _account.CreatedAt == default ? "—" : _account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
+            t.AddRow("Recovery Code:", _account.RecoveryCode);
+            t.AddRow("Savings:", $"{_account.Savings} kr");
 
             // Skriv ut tabellen i terminalen
             AnsiConsole.Write(t);

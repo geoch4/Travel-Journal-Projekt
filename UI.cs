@@ -130,7 +130,7 @@ namespace Travel_Journal
         public static string? AskWithBack(string prompt)
         {
             var input = AnsiConsole.Prompt(
-                new TextPrompt<string>($"[green]{prompt}[/] ([red]Press 0 to go back[/]):")
+                new TextPrompt<string>($"{prompt} ([red]Press 0 to go back[/]):")
                     .PromptStyle("white")
             );
 

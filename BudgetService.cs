@@ -31,7 +31,7 @@ namespace Travel_Journal
                     new SelectionPrompt<string>()
                         .Title("[bold cyan]What would you like to do?[/]")
                         .HighlightStyle(new Style(Color.Chartreuse1))
-                        .AddChoices("➕ Deposit money", "➖ Withdraw money", "📊 View trip budgets", "↩ Back")
+                        .AddChoices("➕ Deposit money", "➖ Withdraw money", "📊 View trip budgets", "✨ Dream Vacation", "↩ Back")
                 );
 
                 if (choice == "➕ Deposit money")
@@ -45,6 +45,10 @@ namespace Travel_Journal
                 else if (choice == "📊 View trip budgets")
                 {
                     ShowTripBudgets();
+                }
+                else if (choice == "✨ Dream Vacation")
+                {
+                    DreamVacation();
                 }
                 else break;
             }
@@ -144,6 +148,97 @@ namespace Travel_Journal
             AnsiConsole.Write(table);
         }
 
+        public void DreamVacation()
+        {
+            UI.Transition("✨ Dream Vacation"); // Titelövergång
+
+            // Kontrollera om användaren redan har en sparad drömresa
+            if (_account.DreamDestination != null && _account.DreamBudget != null)
+            {
+                ShowExistingDreamVacation(); // Visa befintlig drömresa
+                return; // Avsluta metoden
+            }
+
+            CreateOrUpdateDreamVacation(); // Skapa ny drömresa om ingen finns
+        }
+
+        private void ShowExistingDreamVacation()
+        {
+            // Beräkna saknad summa
+            decimal missingAmount = (_account.DreamBudget ?? 0) - _account.Savings;
+
+            // Välj färg beroende på om man har råd
+            string statusText;
+            string statusColor;
+
+            if (missingAmount <= 0)
+            {
+                statusText = "You already have enough savings! 🎉";
+                statusColor = "green";
+                missingAmount = 0; // Ingen skuld
+            }
+            else
+            {
+                statusText = $"You need [red]{missingAmount} SEK[/] more to afford this trip.";
+                statusColor = "yellow";
+            }
+
+            // Skapa panel med drömresan + status
+            var panel = new Panel(
+                $"[bold cyan]{_account.DreamDestination}[/]\n\n" +                // Drömdestination
+                $"[yellow]Ideal Budget:[/] [bold green]{_account.DreamBudget} SEK[/]\n\n" + // Drömbudget
+                $"[{statusColor}]{statusText}[/]"                                // Sparstatus
+            )
+            {
+                Border = BoxBorder.Rounded,
+                Padding = new Padding(1, 1),
+                BorderStyle = new Style(Color.Gold1),
+                Header = new PanelHeader("🌍 Your Dream Vacation")
+            };
+
+            AnsiConsole.Write(panel);
+
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                .Title($"\nDo you want to update your dream vacation?")
+                .AddChoices("✅ Yes", "❌ No")
+                );
+
+            if (confirm == "❌ No")
+            {
+                AnsiConsole.MarkupLine("[grey]Update cancelled.[/]");
+                UserSession.Pause();
+                return;
+            }
+            else
+            {
+                CreateOrUpdateDreamVacation();
+            }
+        }
+
+
+        private void CreateOrUpdateDreamVacation()
+        {
+            // Fråga om destination
+            var destination = AnsiConsole.Ask<string>(
+                "[cyan]Where is your dream destination?[/]"
+            );
+
+            // Fråga om ideal budget
+            var budget = AnsiConsole.Ask<decimal>(
+                "[green]What is your ideal budget for this dream vacation?[/]"
+            );
+
+            // Spara till kontot
+            _account.DreamDestination = destination; // Sätt destination
+            _account.DreamBudget = budget;           // Sätt budget
+
+            // Uppdatera lagrad användardata
+            AccountStore.Update(_account); // Ersätter användaren i listan
+            AccountStore.Save();           // Sparar till Users.json
+
+            UI.Success("Your dream vacation has been saved!"); // Bekräftelse
+        }
     }
 }
     
