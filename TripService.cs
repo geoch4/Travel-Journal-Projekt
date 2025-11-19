@@ -47,12 +47,11 @@ namespace Travel_Journal
         // ============================================================
         // === Add Upcoming Trip (Framtida resa) =======================
         // ============================================================
+        // === Add Upcoming Trip (separerat datum) ===
         public void AddUpcomingTrip()
         {
-            // Håller koll på vilket steg i formuläret vi är
             int step = 0;
 
-            // Formulärfält
             string country = "";
             string city = "";
             decimal budget = 0;
@@ -60,10 +59,9 @@ namespace Travel_Journal
             DateTime endDate = default;
             int passengers = 0;
 
-            // Loopa genom alla steg
-            while (step < 5)
+            while (step < 6)
             {
-                // === Steg 0 – Land ===
+                // === STEP 0 — COUNTRY ===
                 if (step == 0)
                 {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
@@ -76,7 +74,7 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 1 – Stad ===
+                // === STEP 1 — CITY ===
                 else if (step == 1)
                 {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
@@ -94,7 +92,7 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 2 – Budget ===
+                // === STEP 2 — BUDGET ===
                 else if (step == 2)
                 {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
@@ -112,14 +110,13 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 3 – Datum (avresa + hemresa) ===
+                // === STEP 3 — DEPARTURE DATE ===
                 else if (step == 3)
                 {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
                         country, city, budget, startDate, endDate, passengers);
 
-                    // Avresedatum (visar back-text)
-                    var s = UI.AskStepDate("Departure date (YYYY-MM-DD)", true);
+                    var s = UI.AskStepDate("Departure date (YYYY-MM-DD)");
                     if (s == null)
                     {
                         step--;
@@ -127,12 +124,17 @@ namespace Travel_Journal
                         continue;
                     }
 
-                    // Visa header igen innan returdatum
+                    startDate = s.Value;
+                    step++;
+                }
+
+                // === STEP 4 — RETURN DATE ===
+                else if (step == 4)
+                {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
                         country, city, budget, startDate, endDate, passengers);
 
-                    // Hemresedatum (ingen back-text)
-                    var e = UI.AskStepDate("Return date (YYYY-MM-DD)", false);
+                    var e = UI.AskStepDate("Return date (YYYY-MM-DD)");
                     if (e == null)
                     {
                         step--;
@@ -140,20 +142,18 @@ namespace Travel_Journal
                         continue;
                     }
 
-                    // Validering
-                    if (s > e)
+                    if (startDate > e)
                     {
-                        UI.Warn("Start date must be before return date.");
+                        UI.Warn("Return date must be after departure date.");
                         continue;
                     }
 
-                    startDate = s.Value;
                     endDate = e.Value;
                     step++;
                 }
 
-                // === Steg 4 – Passagerare ===
-                else if (step == 4)
+                // === STEP 5 — PASSENGERS ===
+                else if (step == 5)
                 {
                     UI.ShowFormHeader("Add Upcoming Trip ✈️",
                         country, city, budget, startDate, endDate, passengers);
@@ -171,7 +171,6 @@ namespace Travel_Journal
                 }
             }
 
-            // === Skapa resa ===
             var newTrip = new Trip
             {
                 Country = country,
@@ -190,14 +189,16 @@ namespace Travel_Journal
         }
 
 
+
         // ============================================================
         // === Add Previous Trip (Genomförd resa) ======================
         // ============================================================
+        // === Lägger till en tidigare resa (Previous Trip) — nu separerade datumfält ===
         public void AddPreviousTrip()
         {
-            int step = 0;
+            int step = 0; // Håller koll på vilket steg vi befinner oss i
 
-            // Formulärfält
+            // Variabler som fylls i steg för steg
             string country = "";
             string city = "";
             decimal budget = 0;
@@ -208,10 +209,10 @@ namespace Travel_Journal
             int score = 0;
             string review = "";
 
-            // 8 steg totalt
-            while (step < 8)
+            // Totalt 9 steg (land, stad, budget, cost, avresa, hemresa, pass, rating, review)
+            while (step < 9)
             {
-                // === Steg 0 – Land ===
+                // === STEG 0 — LAND ===
                 if (step == 0)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
@@ -219,13 +220,14 @@ namespace Travel_Journal
                         cost, score, review);
 
                     var c = UI.AskWithBack("Which country did you visit");
-                    if (c == null) return;
+                    if (c == null)
+                        return; // back to menu
 
                     country = c;
                     step++;
                 }
 
-                // === Steg 1 – Stad ===
+                // === STEG 1 — STAD ===
                 else if (step == 1)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
@@ -244,7 +246,7 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 2 – Planerad budget ===
+                // === STEG 2 — PLANERAD BUDGET ===
                 else if (step == 2)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
@@ -263,7 +265,7 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 3 – Total kostnad ===
+                // === STEG 3 — TOTAL KOSTNAD ===
                 else if (step == 3)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
@@ -282,14 +284,14 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 4 – Datum ===
+                // === STEG 4 — AVLÄSNING DATUM (SEPARAT) ===
                 else if (step == 4)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
                         country, city, budget, startDate, endDate, passengers,
                         cost, score, review);
 
-                    var s = UI.AskStepDate("Departure date (YYYY-MM-DD)", true);
+                    var s = UI.AskStepDate("Departure date (YYYY-MM-DD)");
                     if (s == null)
                     {
                         step--;
@@ -297,11 +299,18 @@ namespace Travel_Journal
                         continue;
                     }
 
+                    startDate = s.Value;
+                    step++;
+                }
+
+                // === STEG 5 — HEMRESA DATUM (SEPARAT) ===
+                else if (step == 5)
+                {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
                         country, city, budget, startDate, endDate, passengers,
                         cost, score, review);
 
-                    var e = UI.AskStepDate("Return date (YYYY-MM-DD)", false);
+                    var e = UI.AskStepDate("Return date (YYYY-MM-DD)");
                     if (e == null)
                     {
                         step--;
@@ -309,19 +318,18 @@ namespace Travel_Journal
                         continue;
                     }
 
-                    if (s > e)
+                    if (startDate > e)
                     {
-                        UI.Warn("Start date must be before return date.");
+                        UI.Warn("Return date must be after departure date.");
                         continue;
                     }
 
-                    startDate = s.Value;
                     endDate = e.Value;
                     step++;
                 }
 
-                // === Steg 5 – Passagerare ===
-                else if (step == 5)
+                // === STEG 6 — PASSAGERARE ===
+                else if (step == 6)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
                         country, city, budget, startDate, endDate, passengers,
@@ -339,8 +347,8 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 6 – Rating ===
-                else if (step == 6)
+                // === STEG 7 — BETYG ===
+                else if (step == 7)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
                         country, city, budget, startDate, endDate, passengers,
@@ -355,6 +363,7 @@ namespace Travel_Journal
                     }
 
                     int rating = (int)r.Value;
+
                     if (rating < 1 || rating > 5)
                     {
                         UI.Warn("Rating must be between 1–5.");
@@ -365,8 +374,8 @@ namespace Travel_Journal
                     step++;
                 }
 
-                // === Steg 7 – Review ===
-                else if (step == 7)
+                // === STEG 8 — RECENSION ===
+                else if (step == 8)
                 {
                     UI.ShowFormHeader("Add Previous Trip 🧳",
                         country, city, budget, startDate, endDate, passengers,
@@ -385,7 +394,7 @@ namespace Travel_Journal
                 }
             }
 
-            // === Skapa resa ===
+            // === SKAPA & SPARA RESAN ===
             var newTrip = new Trip
             {
                 Country = country,
@@ -405,6 +414,7 @@ namespace Travel_Journal
             UI.Success($"Previous trip to {city}, {country} saved successfully!");
             UserSession.Pause();
         }
+
 
         public void ShowManageTripsMenu() 
         {
