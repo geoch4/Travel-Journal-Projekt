@@ -53,6 +53,7 @@ namespace Travel_Journal
                             "📊 Statistics",
                             "🔄 Edit Trips",
                             "🤖✈️ AI Travel Assistant",
+                            "🌍 World Map (Visited Countries)",
                             "🔧 Support & Help",
                             "🚪 Log out"
                         )
@@ -121,6 +122,26 @@ namespace Travel_Journal
                     // 👈 Viktigt: fortsätt loopen utan att avsluta sessionen
                     continue;
                 }
+
+                else if (sub == "🌍 World Map (Visited Countries)")
+                {
+                    var mapService = new WorldMapService(_tripService);
+
+                    try
+                    {
+                        // Öppna kartan (den pausar själv)
+                        mapService.OpenWorldMap();
+                    }
+                    catch (Exception ex)
+                    {
+                        UI.Error($"Failed to generate world map: {ex.Message}");
+                    }
+
+                    // Ingen Pause() här!
+                    continue;
+                }
+
+
 
                 // === 🔧 Menyval: Support & Hjälp ===
                 else if (sub == "🔧 Support & Help")

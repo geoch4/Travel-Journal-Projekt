@@ -900,5 +900,72 @@ namespace Travel_Journal
                 UserSession.Pause();
             }
         }
+
+        // ============================================================
+        // ===   HÄMTA BESÖKTA LÄNDER FÖR VÄRLDSKARTAN              ===
+        // ============================================================
+
+        /// <summary>
+        /// Returnerar en lista med landsnamn (i rätt format för kartan)
+        /// baserat på användarens completed trips.
+        /// </summary>
+        public List<string> GetVisitedCountryNamesForMap()
+        {
+            // Hämta completed trips (justera om din property heter något annat)
+            var completed = trips
+                .Where(t => t.IsCompleted)
+                .Select(t => t.Country?.Trim())
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var result = new List<string>();
+
+            foreach (var country in completed)
+            {
+                var key = country!.ToLowerInvariant();
+
+                // Om alias finns → använd rätt GeoJSON-namn
+                if (CountryAlias.TryGetValue(key, out var mapped))
+                    result.Add(mapped);
+                else
+                    result.Add(country); // annars använd originalnamnet
+            }
+
+            return result;
+        }
+
+        // ============================================================
+        // ===     ALIAS FÖR LÄNDER (mappar till GeoJSON-namn)      ===
+        // ============================================================
+
+        private static readonly Dictionary<string, string> CountryAlias = new()
+        {
+            // USA
+            ["usa"] = "United States of America",
+            ["us"] = "United States of America",
+            ["united states"] = "United States of America",
+
+            // UK
+            ["uk"] = "United Kingdom",
+            ["england"] = "United Kingdom",
+            ["scotland"] = "United Kingdom",
+            ["great britain"] = "United Kingdom",
+
+            // Korea
+            ["south korea"] = "Korea, Republic of",
+            ["north korea"] = "Korea, Democratic People's Republic of",
+
+            // Övriga vanliga specialnamn
+            ["russia"] = "Russian Federation",
+            ["laos"] = "Lao People's Democratic Republic",
+            ["vietnam"] = "Viet Nam",
+            ["iran"] = "Iran, Islamic Republic of",
+            ["bolivia"] = "Bolivia, Plurinational State of",
+            ["tanzania"] = "Tanzania, United Republic of",
+            ["moldova"] = "Moldova, Republic of",
+            ["venezuela"] = "Venezuela, Bolivarian Republic of",
+            ["syria"] = "Syrian Arab Republic"
+        };
     }
 }

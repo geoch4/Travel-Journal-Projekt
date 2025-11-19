@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Travel Journal – Visited Countries</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #050911;
+            font-family: Arial, sans-serif;
+            color: #00ff99;
+            /* TA BORT centrerings-flex för kartan */
+            display: block;
+        }
+
+        /* === Header med titel + statsbox === */
+        #header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 10px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff99aa;
+            font-size: 36px;
+            margin: 0;
+        }
+
+        /* === Cyberpunk Stats Box === */
+        #statsBox {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            background: rgba(0, 20, 10, 0.55);
+            backdrop-filter: blur(10px);
+            border: 2px solid #00ff99;
+            box-shadow: 0 0 20px #00ff99aa, inset 0 0 15px #00ff9933;
+            color: #b5ffe8;
+            text-shadow: 0 0 8px #00ff99;
+            white-space: nowrap;
+            animation: fadeIn 1.2s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === Stor karta === */
+        #map {
+            width: 98%; /* nästan hela skärmen */
+            height: 88vh; /* nästan hela höjden */
+            margin: 0 auto; /* centrera horisontellt */
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px #00ff99aa, inset 0 0 50px #001f12;
+        }
+
+        .leaflet-container {
+            background: #050911;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div id="header">
+        <h1>Visited Countries</h1>
+        <div id="statsBox"></div>
+    </div>
+
+    <!-- Karta -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const visitedCountries = VISITED_PLACEHOLDER;
+
+        const map = L.map("map", {
+            worldCopyJump: true
+        }).setView([20, 0], 2);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 6,
+            minZoom: 2,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
+            .then(r => r.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: feature => {
+                        const name = feature.properties?.name;
+                        const visited = visitedCountries.includes(name);
+                        return {
+                            fillColor: visited ? "#00ff99" : "#222833",
+                            color: visited ? "#ffffff" : "#444b57",
+                            weight: visited ? 1 : 0.5,
+                            fillOpacity: visited ? 0.9 : 0.4
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const name = feature.properties?.name;
+                        if (!name) return;
+
+                        layer.bindTooltip(name);
+
+                        layer.on("mouseover", () => {
+                            layer.setStyle({
+                                weight: 2,
+                                color: "#00ff99"
+                            });
+                        });
+
+                        layer.on("mouseout", () => {
+                            const visited = visitedCountries.includes(name);
+                            layer.setStyle({
+                                fillColor: visited ? "#00ff99" : "#222833",
+                                color: visited ? "#ffffff" : "#444b57",
+                                weight: visited ? 1 : 0.5,
+                                fillOpacity: visited ? 0.9 : 0.4
+                            });
+                        });
+                    }
+                }).addTo(map);
+
+                const statsBox = document.getElementById("statsBox");
+                const totalCountries = data.features.length;
+                const visitedSet = new Set(visitedCountries);
+                const visitedCount = data.features.filter(f =>
+                    visitedSet.has(f.properties?.name)
+                ).length;
+
+                const percent = (visitedCount / totalCountries) * 100;
+
+                statsBox.textContent =
+                    `Visited: ${visitedCount} / ${totalCountries} countries (${percent.toFixed(1)}%)`;
+            });
+    </script>
+
+</body>
+</html>

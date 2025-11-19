@@ -175,7 +175,7 @@ namespace Travel_Journal
         {
             AnsiConsole.Clear();
 
-            // Titelrad
+            // Titel överst
             var header = new Panel("")
             {
                 Border = BoxBorder.None,
@@ -183,15 +183,15 @@ namespace Travel_Journal
             };
             AnsiConsole.Write(header);
 
-            // Bygg radlista dynamiskt beroende på vad som är ifyllt
+            // Dynamiska informationsrader
             var lines = new List<string>
-            {
-                $"[grey]Country:[/]        {(string.IsNullOrWhiteSpace(country) ? "-" : country)}",
-                $"[grey]City:[/]           {(string.IsNullOrWhiteSpace(city) ? "-" : city)}",
-                $"[grey]Budget:[/]         {(budget == 0 ? "-" : budget.ToString())}",
-                $"[grey]Dates:[/]          {(start == default ? "-" : start.ToString("yyyy-MM-dd"))} → {(end == default ? "-" : end.ToString("yyyy-MM-dd"))}",
-                $"[grey]Passengers:[/]     {(passengers == 0 ? "-" : passengers.ToString())}"
-            };
+    {
+        $"[grey]Country:[/]        {(string.IsNullOrWhiteSpace(country) ? "-" : country)}",
+        $"[grey]City:[/]           {(string.IsNullOrWhiteSpace(city) ? "-" : city)}",
+        $"[grey]Budget:[/]         {(budget == 0 ? "-" : budget.ToString())}",
+        $"[grey]Dates:[/]          {(start == default ? "-" : start.ToString("yyyy-MM-dd"))} → {(end == default ? "-" : end.ToString("yyyy-MM-dd"))}",
+        $"[grey]Passengers:[/]     {(passengers == 0 ? "-" : passengers.ToString())}"
+    };
 
             if (cost.HasValue)
                 lines.Add($"[grey]Cost:[/]           {cost.Value}");
@@ -202,16 +202,18 @@ namespace Travel_Journal
             if (!string.IsNullOrWhiteSpace(review))
                 lines.Add($"[grey]Review:[/]         {review}");
 
+            // Panelen som visar trip-detaljer
             var panel = new Panel(string.Join("\n", lines))
             {
                 Border = BoxBorder.Rounded,
                 BorderStyle = new Style(Color.Grey),
-                Header = new PanelHeader("Current Trip", Justify.Center)
+                Header = new PanelHeader(title, Justify.Center) // <-- FIX HÄR
             };
 
             AnsiConsole.Write(panel);
             AnsiConsole.WriteLine();
         }
+
 
         // ============================
         //   STEG-BAKÅT ANIMATION
