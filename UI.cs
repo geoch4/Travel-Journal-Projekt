@@ -5,57 +5,74 @@ namespace Travel_Journal
 {
     public static class UI
     {
-        // === Splash ===
-        // Visar en "startskärm" när programmet startar.
-        // Den rensar terminalen, skriver en snygg titel i stort textformat,
-        // och visar en liten välkomsttext med skrivmaskinseffekt.
+        // ============================
+        //   STARTSKÄRM / INTRO
+        // ============================
+
+        // Visar en startskärm med ASCII-figlet, linje och skrivmaskinseffekt.
+        // Syfte: Ge användaren en snygg introduktion till programmet.
         public static void Splash()
         {
-            AnsiConsole.Clear(); // Rensar hela terminalfönstret
-            AnsiConsole.Write(new FigletText("Travel Journal").Centered().Color(Color.MediumPurple)); // Stor titel med färg och centrerad
-            AnsiConsole.Write(new Rule("[grey] Team 1 — Code Commanders[/]").LeftJustified()); // Tunn linje med text under titeln
-            TypeOut("Welcome! Navigate using the menu below."); // Skriver ut text tecken för tecken (för animationseffekt)
+            AnsiConsole.Clear();
+            AnsiConsole.Write(new FigletText("Travel Journal").Centered().Color(Color.MediumPurple));
+            AnsiConsole.Write(new Rule("[grey] Team 1 — Code Commanders[/]").LeftJustified());
+            TypeOut("Welcome! Navigate using the menu below.");
         }
 
-        // === MainMenu ===
-        // Visar huvudmenyn där användaren kan välja vad de vill göra.
-        // Returnerar det val användaren gör (t.ex. "Login").
+        // ============================
+        //   HUVUDMENY
+        // ============================
+
+        // Visar en interaktiv meny där användaren väljer vad den vill göra.
         public static string MainMenu()
         {
-            // Använder Spectre.Console:s SelectionPrompt för att skapa en interaktiv meny.
             return AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                .Title("[bold cyan]Choose:[/]") // Menyrubrik
-                .HighlightStyle(new Style(Color.DeepSkyBlue1)) // Färg för det markerade alternativet
-                .AddChoices("Register", "Login", "Forgot password", "Exit") // Menyalternativ
+                    .Title("[bold cyan]Choose:[/]")
+                    .HighlightStyle(new Style(Color.DeepSkyBlue1))
+                    .AddChoices("Register", "Login", "Forgot password", "Exit")
             );
         }
 
-        // === Transition ===
-        // Används för att visa en snygg "avdelare" (en linje med rubrik)
-        // för att markera att vi byter del i programmet (t.ex. Login, Add Trip).
+        // ============================
+        //   AVDELARE / RUBRIKER
+        // ============================
+
+        // Visar en snygg linje med titel. Används när man byter del i appen (t.ex. Login → Add Trip).
         public static void Transition(string title)
         {
             AnsiConsole.Write(new Rule($"[white]{title}[/]").RuleStyle("grey50"));
         }
 
-        // === WithStatus ===
-        // Visar en liten "spinner" (snurrande indikator) medan något görs i bakgrunden.
-        // Används t.ex. när man sparar, laddar eller verifierar data.
+        // ============================
+        //   LOADING-SPINNER
+        // ============================
+
+        // Visar en laddningsanimation runt en metod.
         public static void WithStatus(string text, Action action)
         {
             AnsiConsole.Status()
-                .Spinner(Spinner.Known.Dots2) // Väljer en stil på spinnern
+                .Spinner(Spinner.Known.Dots2)
                 .Start(text, _ =>
                 {
-                    action(); // Kör den metod/åtgärd som skickas in (t.ex. AccountStore.Save)
-                    System.Threading.Thread.Sleep(300); // Kort paus efteråt för att hinna se animationen
+                    action();
+                    System.Threading.Thread.Sleep(300);
                 });
         }
 
-        // === Success ===
-        // Visar ett lyckat meddelande i en grön ruta med ikon ✅
-        // Används t.ex. efter registrering, inloggning, sparad resa.
+        // Overload som returnerar data.
+        public static T WithStatus<T>(string message, Func<T> action)
+        {
+            T result = default!;
+            WithStatus(message, () => { result = action(); });
+            return result;
+        }
+
+        // ============================
+        //   MEDDELANDERUTOR
+        // ============================
+
+        // Grön ruta för lyckade åtgärder.
         public static void Success(string msg)
         {
             var panel = new Panel($"[green]✅ {msg}[/]")
@@ -66,9 +83,7 @@ namespace Travel_Journal
             AnsiConsole.Write(panel);
         }
 
-        // === Error ===
-        // Visar ett felmeddelande i en röd ruta med ikon ❌
-        // Används t.ex. när lösenordet är fel eller kontot inte finns.
+        // Röd ruta för fel.
         public static void Error(string msg)
         {
             var panel = new Panel($"[red]❌ {msg}[/]")
@@ -79,9 +94,7 @@ namespace Travel_Journal
             AnsiConsole.Write(panel);
         }
 
-        // === Warn ===
-        // Visar ett varningsmeddelande i en gul ruta ⚠️
-        // Används t.ex. om användaren skriver in ogiltiga datum eller siffror.
+        // Gul ruta för varningar.
         public static void Warn(string msg)
         {
             var panel = new Panel($"[yellow]⚠ {msg}[/]")
@@ -92,9 +105,7 @@ namespace Travel_Journal
             AnsiConsole.Write(panel);
         }
 
-        // === Info ===
-        // Visar neutrala informationsmeddelanden i blå färg ℹ️
-        // (Lades till för att användas i App.cs vid t.ex. utloggning.)
+        // Blå ruta för neutral info.
         public static void Info(string msg)
         {
             var panel = new Panel($"[deepskyblue1]ℹ {msg}[/]")
@@ -105,42 +116,177 @@ namespace Travel_Journal
             AnsiConsole.Write(panel);
         }
 
-        // === TypeOut ===
-        // Skriver ut text tecken för tecken med liten fördröjning (skrivmaskinseffekt).
-        // Används i introtexten ("Welcome! Navigate using the menu below.").
+        // ============================
+        //   ASCII-SKRIVMASKIN
+        // ============================
+
+        // Skriver text tecken-för-tecken som en skrivmaskin.
         public static void TypeOut(string text)
         {
             foreach (var ch in text)
             {
-                // Varje tecken skrivs ut i grå färg med en minimal paus
                 AnsiConsole.Markup($"[grey]{Markup.Escape(ch.ToString())}[/]");
                 System.Threading.Thread.Sleep(6);
             }
 
-            // Avslutar med radbrytning efter texten
             AnsiConsole.WriteLine();
         }
-        // I UI-klassen
-        public static T WithStatus<T>(string message, Func<T> action)
-        {
-            T result = default!;
-            WithStatus(message, () => { result = action(); });
-            return result;
-        }
+
+        // ============================
+        //   INPUT METODER — MED BACK-LOGIK + LOGGNING
+        // ============================
+
+        // Används på första steget — B = gå tillbaka till föregående meny.
+        // Returnerar null → signalerar att användaren backade.
         public static string? AskWithBack(string prompt)
         {
+            AnsiConsole.MarkupLine("[red](B = Back to menu)[/]");
+
             var input = AnsiConsole.Prompt(
-                new TextPrompt<string>($"{prompt} ([red]Press 0 to go back[/]):")
+                new TextPrompt<string>($"{prompt}:")
                     .PromptStyle("white")
             );
 
-            if (input == "0")
+            if (input.Trim().Equals("b", StringComparison.OrdinalIgnoreCase))
             {
-                UI.Warn("Going back...");
-                return null; // SIGNAL till koden att användaren avbröt
+                Logg.Log($"User pressed B → Back to menu from '{prompt}'");
+                Warn("Returning to previous menu...");
+                return null;
             }
 
             return input;
+        }
+
+        // ============================
+        //   FORM-HEADER FÖR STEG-FÖR-STEG INPUT
+        // ============================
+
+        public static void ShowFormHeader(
+            string title,
+            string country,
+            string city,
+            decimal budget,
+            DateTime start,
+            DateTime end,
+            int passengers,
+            decimal? cost = null,
+            int? score = null,
+            string? review = null)
+        {
+            AnsiConsole.Clear();
+
+            // Titelrad
+            var header = new Panel("")
+            {
+                Border = BoxBorder.None,
+                Header = new PanelHeader($"[bold]{title}[/]", Justify.Center)
+            };
+            AnsiConsole.Write(header);
+
+            // Bygg radlista dynamiskt beroende på vad som är ifyllt
+            var lines = new List<string>
+            {
+                $"[grey]Country:[/]        {(string.IsNullOrWhiteSpace(country) ? "-" : country)}",
+                $"[grey]City:[/]           {(string.IsNullOrWhiteSpace(city) ? "-" : city)}",
+                $"[grey]Budget:[/]         {(budget == 0 ? "-" : budget.ToString())}",
+                $"[grey]Dates:[/]          {(start == default ? "-" : start.ToString("yyyy-MM-dd"))} → {(end == default ? "-" : end.ToString("yyyy-MM-dd"))}",
+                $"[grey]Passengers:[/]     {(passengers == 0 ? "-" : passengers.ToString())}"
+            };
+
+            if (cost.HasValue)
+                lines.Add($"[grey]Cost:[/]           {cost.Value}");
+
+            if (score.HasValue)
+                lines.Add($"[grey]Rating:[/]         {score.Value}/5");
+
+            if (!string.IsNullOrWhiteSpace(review))
+                lines.Add($"[grey]Review:[/]         {review}");
+
+            var panel = new Panel(string.Join("\n", lines))
+            {
+                Border = BoxBorder.Rounded,
+                BorderStyle = new Style(Color.Grey),
+                Header = new PanelHeader("Current Trip", Justify.Center)
+            };
+
+            AnsiConsole.Write(panel);
+            AnsiConsole.WriteLine();
+        }
+
+        // ============================
+        //   STEG-BAKÅT ANIMATION
+        // ============================
+
+        public static void BackOneStep()
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.MarkupLine("[yellow]↩ Back to previous step...[/]\n");
+        }
+
+        // ============================
+        //   STEG-PROMPTAR (STRING / DECIMAL / DATUM)
+        // ============================
+
+        // String-frågor där 0 = gå tillbaka ett steg.
+        public static string? AskStep(string prompt)
+        {
+            AnsiConsole.MarkupLine("[grey]← Press [red]0[/] to go back one step[/]");
+            var input = AnsiConsole.Ask<string>($"{prompt}:");
+
+            if (input.Trim() == "0")
+            {
+                Logg.Log($"User pressed 0 → Step back from '{prompt}'");
+                return null;
+            }
+
+            return input;
+        }
+
+        // Decimal-prompt där 0 = back + loggning vid felaktig siffra.
+        public static decimal? AskStepDecimal(string prompt)
+        {
+            AnsiConsole.MarkupLine("[grey]← Press [red]0[/] to go back one step[/]");
+
+            var input = AnsiConsole.Ask<string>($"{prompt}:");
+
+            if (input.Trim() == "0")
+            {
+                Logg.Log($"User pressed 0 → Step back from decimal prompt '{prompt}'");
+                return null;
+            }
+
+            if (!decimal.TryParse(input, out var val))
+            {
+                Logg.Log($"Invalid decimal input '{input}' for '{prompt}'");
+                Error("Invalid number.");
+                return AskStepDecimal(prompt);
+            }
+
+            return val;
+        }
+
+        // Datum-prompt där 0 = back + loggning vid felaktigt datum
+        public static DateTime? AskStepDate(string prompt, bool showBackText = true)
+        {
+            if (showBackText)
+                AnsiConsole.MarkupLine("[grey]← Press [red]0[/] to go back one step[/]");
+
+            var input = AnsiConsole.Ask<string>($"{prompt}:");
+
+            if (input.Trim() == "0")
+            {
+                Logg.Log($"User pressed 0 → Step back from date prompt '{prompt}'");
+                return null;
+            }
+
+            if (!DateTime.TryParse(input, out var dt))
+            {
+                Logg.Log($"Invalid date input '{input}' for '{prompt}'");
+                Error("Invalid date. Use YYYY-MM-DD.");
+                return AskStepDate(prompt, showBackText);
+            }
+
+            return dt;
         }
     }
 }
