@@ -70,6 +70,7 @@ namespace Travel_Journal
         }
         public void StatsMenu()
         {
+            AnsiConsole.Clear();
             var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title($"[bold cyan] Choose an option:[/]")
@@ -86,12 +87,15 @@ namespace Travel_Journal
             {
                 case "📈 Sort by rating (highest to lowest)":
                     SortTripsByRatingDescending();
+                    UserSession.Pause();
                     break;
                 case "📉 Sort by rating (lowest to highest)":
                     SortTripsByRatingAscending();
+                    UserSession.Pause();
                     break;
                 case "💰 Sort by price (highest to lowest)":
                     SortTripsByPriceDescending();
+                    UserSession.Pause();
                     break;
             }
         }

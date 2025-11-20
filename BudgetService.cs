@@ -19,6 +19,7 @@ namespace Travel_Journal
         // === Huvudmeny för budgetfunktionen ===
         public void ShowBudgetMenu()
         {
+            AnsiConsole.Clear();
             while (true)
             {
                 UI.Transition("💰 Travel Savings Account");
@@ -51,6 +52,7 @@ namespace Travel_Journal
                     DreamVacation();
                 }
                 else break;
+                AnsiConsole.Clear();
             }
         }
 
@@ -62,6 +64,7 @@ namespace Travel_Journal
             {
                 UI.Warn("Amount must be greater than zero.");
                 Logg.Log($"User attempted to deposit invalid amount: {amount}");
+                UserSession.Pause();
                 return;
             }
 
@@ -69,6 +72,7 @@ namespace Travel_Journal
             AccountStore.Update(_account);
             AccountStore.Save();
             UI.Success($"Deposited {amount} SEK. New balance: {_account.Savings} SEK");
+            UserSession.Pause();
         }
 
         // === Ta ut pengar ===
@@ -93,6 +97,7 @@ namespace Travel_Journal
             AccountStore.Update(_account);
             AccountStore.Save();
             UI.Success($"Withdrew {amount} SEK. New balance: {_account.Savings} SEK");
+            UserSession.Pause();
         }
 
         // === Visa resor med planerad budget och faktisk kostnad ===
@@ -150,10 +155,13 @@ namespace Travel_Journal
             }
 
             AnsiConsole.Write(table);
+            UserSession.Pause();
         }
 
         public void DreamVacation()
         {
+            AnsiConsole.Clear();
+
             UI.Transition("✨ Dream Vacation"); // Titelövergång
 
             // Kontrollera om användaren redan har en sparad drömresa
