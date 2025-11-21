@@ -19,19 +19,28 @@ namespace Travel_Journal
             TypeOut("Welcome! Navigate using the menu below.");
         }
 
-        // ============================
-        //   HUVUDMENY
-        // ============================
-
-        // Visar en interaktiv meny där användaren väljer vad den vill göra.
-        public static string MainMenu()
+        // Metod för att visa profil
+        public static void ShowProfile(Account account)
         {
-            return AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[bold cyan]Choose:[/]")
-                    .HighlightStyle(new Style(Color.DeepSkyBlue1))
-                    .AddChoices("Register", "Login", "Forgot password", "Exit")
-            );
+            // Skapa en tabell med Spectre.Console
+            var t = new Table()
+                .Border(TableBorder.Rounded)
+                .BorderStyle(new Style(Color.DarkViolet));
+
+            // Kolumner
+            t.AddColumn("Attribute");
+            t.AddColumn("Details");
+
+            // Lägg till data från kontot
+            t.AddRow("Username:", account.UserName);
+            t.AddRow("Created:", account.CreatedAt == default
+                ? "—"
+                : account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
+            t.AddRow("Recovery Code:", account.RecoveryCode);
+            t.AddRow("Savings:", $"{account.Savings} kr");
+
+            // Skriv ut tabellen i terminalen
+            AnsiConsole.Write(t);
         }
 
         // ============================
@@ -345,6 +354,14 @@ namespace Travel_Journal
                 return AskInt(prompt);
             }
             return val;
+        }
+
+        //Enkel paus metod
+        public static void Pause()
+        {
+            AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
+            Console.ReadLine();
+            AnsiConsole.Clear();
         }
     }
 }

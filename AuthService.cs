@@ -70,7 +70,7 @@ namespace Travel_Journal
                 catch (Exception ex)
                 {
                     UI.Error("Failed to send verification email: " + ex.Message);
-                    Logg.Log("Failed to send verification email");///////////////////////////////////////////////////////////////////////////
+                    Logg.Log("Failed to send verification email");
                     sent = false;
                 }
             });

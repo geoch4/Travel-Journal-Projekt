@@ -20,6 +20,7 @@ namespace Travel_Journal
 
         public void SortTripsByRatingDescending()
         {
+            AnsiConsole.Clear();
             // Om det inte finns några resor för användaren registrerade.
             var trips = _tripService.GetTrips(); // Hämtar alla resor
             if (trips.Count == 0)
@@ -37,6 +38,7 @@ namespace Travel_Journal
         }
         public void SortTripsByRatingAscending()
         {
+            AnsiConsole.Clear();
             var trips = _tripService.GetTrips();
             if (trips.Count == 0)
             {
@@ -54,6 +56,7 @@ namespace Travel_Journal
         //Skapa en metod som visar dyrast till billigaste resan.
         public void SortTripsByPriceDescending()
         {
+            AnsiConsole.Clear();
             var trips = _tripService.GetTrips();
             if (trips.Count == 0)
             {
@@ -66,33 +69,6 @@ namespace Travel_Journal
             foreach (var trip in sortedTrips)
             {
                 AnsiConsole.MarkupLine($"Country: {trip.Country}, Cost: {trip.Cost}, Score: {trip.Score}");
-            }
-        }
-        public void StatsMenu()
-        {
-            var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[bold cyan] Choose an option:[/]")
-                        .HighlightStyle(new Style(Color.DeepSkyBlue1))
-                        .AddChoices(
-                            "📈 Sort by rating (highest to lowest)",
-                            "📉 Sort by rating (lowest to highest)",
-                            "💰 Sort by price (highest to lowest)",
-                            "🔙 Back to Main Menu"
-
-                        )
-                );
-            switch (choice)
-            {
-                case "📈 Sort by rating (highest to lowest)":
-                    SortTripsByRatingDescending();
-                    break;
-                case "📉 Sort by rating (lowest to highest)":
-                    SortTripsByRatingAscending();
-                    break;
-                case "💰 Sort by price (highest to lowest)":
-                    SortTripsByPriceDescending();
-                    break;
             }
         }
     }
