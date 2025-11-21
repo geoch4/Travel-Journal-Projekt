@@ -15,14 +15,18 @@ namespace Travel_Journal
     /// </summary>
     public class UserSession
     {
+        // === Fält ===
         // Den aktuella inloggade användaren
         private readonly Account _account;
 
-        // TripService hanterar alla resor (CRUD + JSON-lagring)
+        // Hanterar alla resor för användaren (CRUD + JSON)
         private readonly TripService _tripService;
 
-       
-       
+        // Förifyllda services för att slippa new i switchen
+        private readonly BudgetService _budget;
+        private readonly Statistics _stats;
+        private readonly SupportService _support;
+        private readonly WorldMapService _map;
 
         // === Konstruktor ===
         public UserSession(Account account)
@@ -32,6 +36,12 @@ namespace Travel_Journal
 
             // Skapa TripService som laddar användarens resor baserat på användarnamn
             _tripService = new TripService(account.UserName);
+
+            // Initiera alla services som behövs i sessionen
+            _budget = new BudgetService(account, _tripService);
+            _stats = new Statistics(_tripService);
+            _support = new SupportService();
+            _map = new WorldMapService(_tripService);
         }
 
         // === 🧭 Huvudloop för inloggad användare ===
@@ -40,166 +50,105 @@ namespace Travel_Journal
         {
             while (true)
             {
-                // 🧾 Skapa en meny med val (Spectre.Console gör det snyggt och färgrikt)
-                var sub = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[bold cyan]Welcome, {_account.UserName}![/] Choose an option:")
-                        .HighlightStyle(new Style(Color.Cyan1))
-                        .AddChoices(
-                            "👤 View Profile",
-                            "📘 Add Trips",
-                            "📋 Show All Trips",
-                            "💰 Budget & Savings",
-                            "📊 Statistics",
-                            "🔄 Edit Trips",
-                            "🤖✈️ AI Travel Assistant",
-                            "🌍 World Map (Visited Countries)",
-                            "🔧 Support & Help",
-                            "🚪 Log out"
-                        )
-                );
+                // Hämta menyvalet
+                string choice = MenuService.LoggedInMenu(_account.UserName);
 
-                // === Menyval: profil ===
-                if (sub == "👤 View Profile")
+                switch (choice)
                 {
-                    ShowProfile();
-                    Pause();
-                }
-                // === Menyval: för både nya "kommande resor" och "gamla resor" ===
-                else if (sub == "📘 Add Trips")
-                {
-                    
-                    _tripService.ShowManageTripsMenu();
-                }
-              
-                // === Menyval: visa alla resor ===
-                else if (sub == "📋 Show All Trips")
-                {
-                    _tripService.ShowAllTrips();
-                    Pause();
-                }
-                // === Menyval: budget ===
-                else if (sub == "💰 Budget & Savings")
-                {
-                    // Skapa en separat service för budget (kopplad till användare och resor)
-                    var budgetService = new BudgetService(_account, _tripService);
-                    budgetService.ShowBudgetMenu();
-                }
-                // === Menyval: statistik ===
-                else if (sub == "📊 Statistics")
-                {
-                    var statsService = new Statistics(_tripService);
-                    statsService.StatsMenu();
-                }
-                // === Menyval: uppdatera resor ===
-                else if (sub == "🔄 Edit Trips")
-                {
-                    var trips = _tripService.GetTrips();
-                    _tripService.UpdateTrips(trips);
-                    //Pause();
-                }
-                // === Menyval: AI Travel Assistant ===
-                else if (sub == "🤖✈️ AI Travel Assistant")
-                {
-                    var aiAssistant = new AITravelAssistant();
-                    try
-                    {
-                        // Rensa skärmen för ren AI-prompt
-                        AnsiConsole.Clear();
+                    // === Profil ===
+                    case "👤 View Profile":
+                        UI.ShowProfile(_account);
+                        UI.Pause();
+                        break;
 
-                        // Vänta tills AI:n har genererat sitt svar (async)
-                        await aiAssistant.ShowAISuggestionAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Visa eventuella fel i AI-delen på ett snyggt sätt
-                        UI.Error($"AI Travel Assistant failed: {ex.Message}");
-                        Logg.Log($"AI Travel Assistant error for user {_account.UserName}: {ex}");
-                    }
+                    // === Lägg till resor ===
+                    case "📘 Add Trips":
+                        MenuService.ShowTripMenu(_tripService);
+                        break;
 
-                    // Vänta på ENTER innan menyn visas igen
-                    Pause();
+                    // === Visa alla resor ===
+                    case "📋 Show All Trips":
+                        _tripService.ShowAllTrips();
+                        UI.Pause();
+                        break;
 
-                    // 👈 Viktigt: fortsätt loopen utan att avsluta sessionen
-                    continue;
-                }
+                    // === Budget ===
+                    case "💰 Budget & Savings":
+                        MenuService.BudgetMenu(_budget);
+                        break;
 
-                else if (sub == "🌍 World Map (Visited Countries)")
-                {
-                    var mapService = new WorldMapService(_tripService);
+                    // === Statistik ===
+                    case "📊 Statistics":
+                        MenuService.StatsMenu(_stats);
+                        break;
 
-                    try
-                    {
-                        // Öppna kartan (den pausar själv)
-                        mapService.OpenWorldMap();
-                    }
-                    catch (Exception ex)
-                    {
-                        UI.Error($"Failed to generate world map: {ex.Message}");
-                        Logg.Log($"World Map error for user {_account.UserName}: {ex}");
-                    }
+                    // === Uppdatera resor ===
+                    case "🔄 Edit Trips":
+                        MenuService.ShowTripEditMenu(_tripService);
+                        break;
 
-                    // Ingen Pause() här!
-                    continue;
-                }
+                    // === AI-assistent ===
+                    case "🤖✈️ AI Travel Assistant":
+                        await RunAIAssistant();
+                        continue; // fortsätt loopen direkt utan break
 
+                    // === Världskarta ===
+                    case "🌍 World Map (Visited Countries)":
+                        try
+                        {
+                            _map.OpenWorldMap(); // den pausar själv
+                        }
+                        catch (Exception ex)
+                        {
+                            UI.Error($"Failed to generate world map: {ex.Message}");
+                            Logg.Log($"World Map error for user {_account.UserName}: {ex}");
+                        }
+                        continue;
 
+                    // === Support ===
+                    case "🔧 Support & Help":
+                        bool exit = MenuService.ShowSupportMenu(_support, _account);
 
-                // === 🔧 Menyval: Support & Hjälp ===
-                else if (sub == "🔧 Support & Help")
-                {
-                    // Skapar en ny instans av SupportService
-                    var support = new SupportService();
+                        if (exit)
+                            return; // Användaren valde Delete Account → avsluta session
 
-                    // Visar supportmenyn och skickar med aktuell användare (_account)
-                    bool exit = support.ShowSupportMenu(_account);
+                        break;
 
-                    // Om användaren raderade sitt konto (ShowSupportMenu returnerar true)
-                    if (exit)
-                        return; // Avsluta hela UserSession.Start() → användaren loggas ut och återgår till huvudmenyn
-                }
+                    // === Logga ut ===
+                    case "🚪 Log out":
+                        UI.Transition("Logging out...");
+                        UI.Info($"Goodbye, {_account.UserName}! 👋");
+                        return;
 
-                // === Menyval: logga ut ===
-                else if (sub == "🚪 Log out")
-                {
-                    UI.Transition("Logging out...");
-                    UI.Info($"Goodbye, {_account.UserName}! 👋");
-                    return; // Avslutar sessionen och går tillbaka till huvudmenyn
+                    // === Unknown ===
+                    default:
+                        UI.Error("Unknown menu selection.");
+                        break;
                 }
             }
         }
 
-        // === 👤 Visar användarens profilinformation ===
-        private void ShowProfile()
+        // === 🧠 Extraherad AI-metod (samma logik, bara flyttad) ===
+        private async Task RunAIAssistant()
         {
-            // Skapa en tabell med Spectre.Console
-            var t = new Table()
-                .Border(TableBorder.Rounded)
-                .BorderStyle(new Style(Color.DarkViolet));
+            var aiAssistant = new AITravelAssistant();
 
-            // Kolumner
-            t.AddColumn("Attribute");
-            t.AddColumn("Details");
+            try
+            {
+                // Rensa skärmen för ren AI-prompt
+                AnsiConsole.Clear();
 
-            // Lägg till data från kontot
-            t.AddRow("Username:", _account.UserName);
-            t.AddRow("Created:", _account.CreatedAt == default ? "—" : _account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
-            t.AddRow("Recovery Code:", _account.RecoveryCode);
-            t.AddRow("Savings:", $"{_account.Savings} kr");
+                // Vänta tills AI:n har genererat sitt svar (async)
+                await aiAssistant.ShowAISuggestionAsync();
+            }
+            catch (Exception ex)
+            {
+                UI.Error($"AI Travel Assistant failed: {ex.Message}");
+                Logg.Log($"AI Travel Assistant error for user {_account.UserName}: {ex}");
+            }
 
-            // Skriv ut tabellen i terminalen
-            AnsiConsole.Write(t);
+            // Vänta på ENTER innan menyn visas igen
+            UI.Pause();
         }
-
-        // === ⏸️ Enkel paus innan nästa meny ===
-        // Används efter varje val så att användaren hinner läsa resultatet
-        public static void Pause()
-        {
-            AnsiConsole.MarkupLine("\n[grey]Press [bold]ENTER[/] to continue...[/]");
-            Console.ReadLine();
-            AnsiConsole.Clear();
-        }
-        
     }
 }
-

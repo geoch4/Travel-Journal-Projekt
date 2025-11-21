@@ -29,7 +29,7 @@ namespace Travel_Journal
             while (true)
             {
                 // 🧭 Visar huvudmenyn med Spectre.Console och sparar användarens val
-                var choice = UI.MainMenu(); // Alternativ: Register / Login / Forgot password / Exit
+                var choice = MenuService.MainMenu(); // Alternativ: Register / Login / Forgot password / Exit
 
                 switch (choice)
                 {

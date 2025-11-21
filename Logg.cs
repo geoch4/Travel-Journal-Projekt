@@ -33,17 +33,3 @@ namespace Travel_Journal
         }
     }
 }
-
-
-//try...catch för att testa att skriva loggen samt fånga eventuella fel utan att krascha programmet
-//loggning är alltid något extra, får inte slå ut appen
-//Paths.DataDir---sökväg till vår datamapp(finns redan i projektet)
-//Directory.CreateDirectory(...): Innan vi skriver en fil måste mappen finnas, Om mappen inte finns → skapas den.
-//Om mappen finns → händer inget, det är safe att anropa ändå.
-//static---slipper skapa objekt
-//string line----vi sparar 2 saker varje gång(VAR det hände och VAD hände)-lägger den på en rad som ser ut som JSON
-//“Append” betyder: lägg till text på slutet.
-//Om filen inte finns → den skapas.
-//Om filen finns → raden läggs längst ner.
-//Environment.NewLine ger en radbrytning så att varje loggpost hamnar på egen rad.
-//tom catch---om något går fel då catch körs
