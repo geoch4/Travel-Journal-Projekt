@@ -423,6 +423,7 @@ namespace Travel_Journal
         // === Visar alla resor i tabellform ===
         public void ShowAllTrips()
         {
+            AnsiConsole.Clear();
             UI.Transition($"All Trips for {username} 🌍");
 
             if (!trips.Any())
