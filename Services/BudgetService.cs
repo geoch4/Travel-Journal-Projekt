@@ -68,7 +68,7 @@ namespace Travel_Journal.Services
         // === Visa resor med planerad budget och faktisk kostnad ===
         public void ShowTripBudgets()
         {
-            var trips = _tripService.GetTrips(); // Hämtar alla resor
+            var trips = _tripService.GetAllTrips(); // Hämtar alla resor
             if (trips.Count == 0)
             {
                 UI.Warn("No trips found.");
