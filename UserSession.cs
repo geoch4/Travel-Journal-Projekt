@@ -25,6 +25,10 @@ namespace Travel_Journal.Services
         // Hanterar alla resor för användaren (CRUD + JSON)
         private readonly TripService _tripService;
 
+        // Hanterar UTSEENDE (Menyer & Input)
+        private readonly TripUI _tripUI;
+        private readonly UpdateTripUI _updateTripUI;
+
         // Förifyllda services för att slippa new i switchen
         private readonly BudgetService _budget;
         private readonly Statistics _stats;
@@ -39,6 +43,10 @@ namespace Travel_Journal.Services
 
             // Skapa TripService som laddar användarens resor baserat på användarnamn
             _tripService = new TripService(account.UserName);
+
+            // 2. Skapa TripUI och ge den servicen (Ansiktet) 
+            _tripUI = new TripUI(_tripService);
+            _updateTripUI = new UpdateTripUI(_tripService);
 
             // Initiera alla services som behövs i sessionen
             _budget = new BudgetService(account, _tripService);
@@ -66,12 +74,12 @@ namespace Travel_Journal.Services
 
                     // === Lägg till resor ===
                     case "📘 Add Trips":
-                        MenuService.ShowTripMenu(_tripService);
+                        MenuService.ShowTripMenu(_tripUI);
                         break;
 
                     // === Visa alla resor ===
                     case "📋 Show All Trips":
-                        _tripService.ShowAllTrips();
+                        _tripUI.ShowAllTrips();
                         UI.Pause();
                         break;
 
@@ -87,7 +95,7 @@ namespace Travel_Journal.Services
 
                     // === Uppdatera resor ===
                     case "🔄 Edit Trips":
-                        MenuService.ShowTripEditMenu(_tripService);
+                        MenuService.ShowTripEditMenu(_updateTripUI);
                         break;
 
                     // === AI-assistent ===

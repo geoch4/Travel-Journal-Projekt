@@ -25,7 +25,7 @@ namespace Travel_Journal.Models
         {
             AnsiConsole.Clear();
             // Om det inte finns några resor för användaren registrerade.
-            var trips = _tripService.GetTrips(); // Hämtar alla resor
+            var trips = _tripService.GetAllTrips(); // Hämtar alla resor
             if (trips.Count == 0)
             {
                 UI.Warn("No trips found.");
@@ -42,7 +42,7 @@ namespace Travel_Journal.Models
         public void SortTripsByRatingAscending()
         {
             AnsiConsole.Clear();
-            var trips = _tripService.GetTrips();
+            var trips = _tripService.GetAllTrips();
             if (trips.Count == 0)
             {
                 UI.Warn("No trips found.");
@@ -60,7 +60,7 @@ namespace Travel_Journal.Models
         public void SortTripsByPriceDescending()
         {
             AnsiConsole.Clear();
-            var trips = _tripService.GetTrips();
+            var trips = _tripService.GetAllTrips();
             if (trips.Count == 0)
             {
                 UI.Warn("No trips found.");
