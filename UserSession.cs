@@ -27,6 +27,7 @@ namespace Travel_Journal.Services
 
         // Hanterar UTSEENDE (Menyer & Input)
         private readonly TripUI _tripUI;
+        private readonly UpdateTripUI _updateTripUI;
 
         // Förifyllda services för att slippa new i switchen
         private readonly BudgetService _budget;
@@ -45,6 +46,7 @@ namespace Travel_Journal.Services
 
             // 2. Skapa TripUI och ge den servicen (Ansiktet) 
             _tripUI = new TripUI(_tripService);
+            _updateTripUI = new UpdateTripUI(_tripService);
 
             // Initiera alla services som behövs i sessionen
             _budget = new BudgetService(account, _tripService);
@@ -93,7 +95,7 @@ namespace Travel_Journal.Services
 
                     // === Uppdatera resor ===
                     case "🔄 Edit Trips":
-                        MenuService.ShowTripEditMenu(_tripUI);
+                        MenuService.ShowTripEditMenu(_updateTripUI);
                         break;
 
                     // === AI-assistent ===

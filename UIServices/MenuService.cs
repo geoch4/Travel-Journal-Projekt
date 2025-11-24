@@ -188,7 +188,7 @@ namespace Travel_Journal.UIServices
         }
 
         // Meny för att uppdatera resor
-        public static void ShowTripEditMenu(TripUI tripUI)
+        public static void ShowTripEditMenu(UpdateTripUI updateTripUI)
         {
             while (true)
             {
@@ -211,31 +211,31 @@ namespace Travel_Journal.UIServices
                 switch (choice)
                 {
                     case "⭐ Rating":
-                        tripUI.UpdateRating();
+                        updateTripUI.UpdateRating();
                         break;
 
                     case "🛫 Depart Date":
-                        tripUI.UpdateDepartDate();
+                        updateTripUI.UpdateDepartDate();
                         break;
 
                     case "🛬 Return Date":
-                        tripUI.UpdateReturnDate();
+                        updateTripUI.UpdateReturnDate();
                         break;
 
                     case "💰 Budget":
-                        tripUI.UpdateBudget();
+                        updateTripUI.UpdateBudget();
                         break;
 
                     case "💸 Cost":
-                        tripUI.UpdateCost();
+                        updateTripUI.UpdateCost();
                         break;
 
                     case "👥 Number of Passengers":
-                        tripUI.UpdateNumberOfPassengers();
+                        updateTripUI.UpdateNumberOfPassengers();
                         break;
 
                     case "🗑️ Delete Trip":
-                        tripUI.DeleteTrip();
+                        updateTripUI.DeleteTrip();
                         break;
 
                     case "↩️ Return":
