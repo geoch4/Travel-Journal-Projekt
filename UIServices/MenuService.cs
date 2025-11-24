@@ -156,7 +156,7 @@ namespace Travel_Journal.UIServices
         }
 
         // Meny för att lägga till resor
-        public static void ShowTripMenu(TripService tripService)
+        public static void ShowTripMenu(TripUI tripUI)
         {
             while (true)
             {
@@ -174,11 +174,11 @@ namespace Travel_Journal.UIServices
                 switch (choice)
                 {
                     case "➕ Add Upcoming Trip":
-                        tripService.AddUpcomingTrip();
+                        tripUI.AddUpcomingTrip();
                         break;
 
                     case "🕰 Add Previous Trip":
-                        tripService.AddPreviousTrip();
+                        tripUI.AddPreviousTrip();
                         break;
 
                     case "↩ Back":
@@ -188,12 +188,10 @@ namespace Travel_Journal.UIServices
         }
 
         // Meny för att uppdatera resor
-        public static void ShowTripEditMenu(TripService tripService)
+        public static void ShowTripEditMenu(TripUI tripUI)
         {
             while (true)
             {
-                var trips = tripService.GetTrips();
-
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold cyan]🛠️ Choose what you want to update or manage:[/]")
@@ -213,31 +211,31 @@ namespace Travel_Journal.UIServices
                 switch (choice)
                 {
                     case "⭐ Rating":
-                        tripService.UpdateRating(trips);
+                        tripUI.UpdateRating();
                         break;
 
                     case "🛫 Depart Date":
-                        tripService.UpdateDepartDate(trips);
+                        tripUI.UpdateDepartDate();
                         break;
 
                     case "🛬 Return Date":
-                        tripService.UpdateReturnDate(trips);
+                        tripUI.UpdateReturnDate();
                         break;
 
                     case "💰 Budget":
-                        tripService.UpdateBudget(trips);
+                        tripUI.UpdateBudget();
                         break;
 
                     case "💸 Cost":
-                        tripService.UpdateCost(trips);
+                        tripUI.UpdateCost();
                         break;
 
                     case "👥 Number of Passengers":
-                        tripService.UpdateNumberOfPassengers(trips);
+                        tripUI.UpdateNumberOfPassengers();
                         break;
 
                     case "🗑️ Delete Trip":
-                        tripService.DeleteTrip(trips);
+                        tripUI.DeleteTrip();
                         break;
 
                     case "↩️ Return":
