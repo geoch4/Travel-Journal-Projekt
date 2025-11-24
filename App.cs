@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Travel_Journal.Data;
+using Travel_Journal.Models;
 using Travel_Journal.Services;
 using Travel_Journal.UIServices;
 
@@ -27,6 +28,8 @@ namespace Travel_Journal
 
             // 🔐 Skapar AuthService-instans (hanterar inloggning, registrering, lösenord)
             var auth = new AuthService();
+            // 📂 Skapar DataStore för konton (används av AdminService)
+            var adminService = new AdminService();
 
             // 🔁 Programmet körs i en evig loop tills användaren väljer "Exit"
             while (true)
@@ -67,6 +70,12 @@ namespace Travel_Journal
 
                         if (acc != null)
                         {
+
+                            if (acc.IsAdmin)
+                            { 
+                                AdminMenu.ShowAdminMenu(adminService);
+                                break;
+                            }
                             // ✅ Inloggningen lyckades!
                             // Skapa en UserSession som hanterar allt när användaren är inloggad
                             var session = new UserSession(acc);

@@ -13,14 +13,10 @@ namespace Travel_Journal.Services
     public class AdminService
     {
         private readonly DataStore<Account> _accountStore;
-        public AdminService(DataStore<Account> accountStore)
-        {
-            _accountStore = accountStore;
-        }
-
+    
         public void ShowAllUsers()
         {
-            var accounts = _accountStore.GetAll();
+            var accounts = AccountStore.GetAll();
 
             if (!accounts.Any())
             {
@@ -34,15 +30,13 @@ namespace Travel_Journal.Services
                 .BorderColor(Color.Grey50)
                 .Centered();
 
-            table.AddColumn("[cyan]Email[/]");
-            table.AddColumn("[cyan]Name[/]");
-            table.AddColumn("[cyan]Phone[/]");
+            table.AddColumn("[cyan]Username[/]");
             table.AddColumn("[cyan]Admin[/]");
 
             foreach (var acc in accounts)
             {
                 table.AddRow(
-                    acc.Email ?? "-",
+                    acc.UserName ?? "-",
                     acc.IsAdmin ? "[green]Yes[/]" : "[grey]No[/]"
                 );
             }
@@ -52,10 +46,39 @@ namespace Travel_Journal.Services
         }
         public void DeleteUser()
         {
-            var email = AnsiConsole.Ask<string>("[red]Enter email of user to delete:[/]");
+            // Visa först alla användare i en tabell
+            var accounts = AccountStore.GetAll();
 
-            var accounts = _accountStore.GetAll();
-            var account = accounts.FirstOrDefault(a => a.Email == email);
+            if (!accounts.Any())
+            {
+                UI.Warn("No accounts to delete.");
+                UI.Pause();
+                return;
+            }
+
+            var table = new Table()
+                .Border(TableBorder.Rounded)
+                .BorderColor(Color.Grey50)
+                .Centered();
+
+            table.AddColumn("[cyan]Username[/]");
+            table.AddColumn("[cyan]Admin[/]");
+
+            foreach (var acc in accounts)
+            {
+                table.AddRow(
+                    acc.UserName ?? "-",
+                    acc.IsAdmin ? "[green]Yes[/]" : "[red]No[/]"
+                );
+            }
+
+            AnsiConsole.Write(table);
+            UI.Pause(); // så du hinner se listan innan du skriver username
+
+            // Nu frågar vi vem som ska raderas
+            var username = AnsiConsole.Ask<string>("[red]Enter username of user to delete:[/]");
+
+            var account = accounts.FirstOrDefault(a => a.UserName == username);
 
             if (account == null)
             {
@@ -71,34 +94,16 @@ namespace Travel_Journal.Services
                 return;
             }
 
-            var confirm = AnsiConsole.Confirm($"Are you sure you want to delete [yellow]{email}[/]?");
+            var confirm = AnsiConsole.Confirm($"Are you sure you want to delete [yellow]{username}[/]?");
+
             if (!confirm) return;
 
             accounts.Remove(account);
-            _accountStore.Save(accounts);
+
+            // Spara ändringarna till users.json
+            AccountStore.Save();
 
             UI.Success("User deleted successfully.");
-            UI.Pause();
-        }
-        public void ToggleAdmin()
-        {
-            var email = AnsiConsole.Ask<string>("[aqua]Enter email to toggle admin role:[/]");
-            var accounts = _accountStore.GetAll();
-            var account = accounts.FirstOrDefault(a => a.Email == email);
-
-            if (account == null)
-            {
-                UI.Error("User not found.");
-                UI.Pause();
-                return;
-            }
-
-            account.IsAdmin = !account.IsAdmin;
-            _accountStore.Save(accounts);
-
-            var status = account.IsAdmin ? "granted" : "revoked";
-
-            UI.Success($"Admin role {status} for {email}.");
             UI.Pause();
         }
     }

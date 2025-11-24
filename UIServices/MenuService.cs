@@ -291,44 +291,5 @@ namespace Travel_Journal.UIServices
                 }
             }
         }
-
-        public static void ShowAdminMenu(AdminService adminService)
-        {
-            while (true)
-            {
-                UI.Transition("Admin Panel 🛠");
-
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[red]Admin Panel[/]")
-                        .PageSize(7)
-                        .AddChoices(new[]
-                        {
-                    "👥 View all users",
-                    "🗑 Delete user",
-                    "🔁 Toggle admin role",
-                    "↩ Back"
-                        })
-                );
-
-                switch (choice)
-                {
-                    case "👥 View all users":
-                        adminService.ShowAllUsers();
-                        break;
-
-                    case "🗑 Delete user":
-                        adminService.DeleteUser();
-                        break;
-
-                    case "🔁 Toggle admin role":
-                        adminService.ToggleAdmin();
-                        break;
-
-                    case "↩ Back":
-                        return;
-                }
-            }
-        }
     }
 }
