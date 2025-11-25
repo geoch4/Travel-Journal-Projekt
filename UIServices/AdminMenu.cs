@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Travel_Journal.UIServices;
+using Travel_Journal.Services;
 
-namespace Travel_Journal.Services
+namespace Travel_Journal.UIServices
 {
     public static class AdminMenu
     {
@@ -32,7 +32,6 @@ namespace Travel_Journal.Services
                 {
                     case "👥 View all users":
                         adminService.ShowAllUsers();
-                        UI.Pause();
                         break;
 
                     case "🗑  Delete user":

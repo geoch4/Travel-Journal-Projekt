@@ -87,21 +87,7 @@ namespace Travel_Journal
                         break;
 
                     case "Forgot password":
-                        // === Återställ lösenord ===
-                        UI.Transition("Forgot Password");
-
-                        // Fråga användaren om användarnamn, återställningskod och nytt lösenord
-                        var name = UI.AskWithBack("Username");
-                        if (name == null)
-                            break; // eller gå till föregående meny
-                        var code = AnsiConsole.Ask<string>("Recovery code:");
-                        var newPwd = AnsiConsole
-                            .Prompt(new TextPrompt<string>("New password:").Secret());
-                        var confirm = AnsiConsole
-                            .Prompt(new TextPrompt<string>("Confirm password:").Secret());
-
-                        // Försök återställa via AuthService
-                        auth.ResetPassword(name, code, newPwd, confirm);
+                        await auth.ForgotPasswordAsync();
                         break;
 
                     default:

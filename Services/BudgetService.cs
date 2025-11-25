@@ -197,9 +197,11 @@ namespace Travel_Journal.Services
         private void CreateOrUpdateDreamVacation()
         {
             // Fråga om destination
-            var destination = AnsiConsole.Ask<string>(
-                "[cyan]Where is your dream destination?[/]"
-            );
+            var destination = UI.AskWithBack("[cyan]Where is your dream destination?[/]");
+            if (destination == null) // Går tillbaka till budgetmenyn om användare trycker b
+            {
+                return;
+            }
 
             // Fråga om ideal budget
             var budget = AnsiConsole.Ask<decimal>(

@@ -32,7 +32,6 @@ namespace Travel_Journal.Services
                 Email = "admin@example.com",
                 EmailVerified = false,      // du kan köra din vanliga verifieringsprocess sen om du vill
                 TwoFactorEnabled = false,
-                RecoveryCode = Util.GenerateRecoveryCode(),
                 CreatedAt = DateTime.UtcNow,
                 IsAdmin = true
             };
@@ -78,7 +77,6 @@ namespace Travel_Journal.Services
             acc.Email = email;
             acc.EmailVerified = false;
             acc.TwoFactorEnabled = false;
-            acc.RecoveryCode = Util.GenerateRecoveryCode();
             acc.CreatedAt = DateTime.UtcNow;
 
             // Skicka verifikationskod (wrappar utan WithStatusAsync)
@@ -145,7 +143,6 @@ namespace Travel_Journal.Services
 
             var panel = new Panel($"""
             [green]✅ User {acc.UserName} created & email verified![/]
-            [yellow]Recovery code:[/] [bold]{acc.RecoveryCode}[/]
             [grey]2FA enabled:[/] {(acc.TwoFactorEnabled ? "[green]Yes[/]" : "[yellow]No[/]")}
             """)
             {
@@ -236,46 +233,113 @@ namespace Travel_Journal.Services
         }
 
         // === EN (1) definition av ResetPassword ===
-        public void ResetPassword(string username, string recoveryCode, string newPassword, string confirmPassword)
+        public async Task ForgotPasswordAsync()
         {
-            if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
-            {
-                UI.Error("Passwords does not match.");
-                Logg.Log($"Password reset failed for '{username}': Passwords did not match.");
-                return;
-            }
+            AnsiConsole.MarkupLine("[yellow]--- Reset Password ---[/]");
 
+            // 1. Hitta användaren
+            var username = UI.AskWithBack("Enter your username");
             var acc = AccountStore.Get(username);
+
             if (acc == null)
             {
                 UI.Error("Unknown username.");
-                Logg.Log($"Password reset failed: Unknown username '{username}'.");
                 return;
             }
 
-            if (!string.Equals(acc.RecoveryCode, recoveryCode, StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(acc.Email))
             {
-                UI.Error("Wrong recovery code.");
-                Logg.Log($"Password reset failed for '{username}': Wrong recovery code.");
+                UI.Error("No email connected to this account. Cannot reset password.");
                 return;
             }
 
-            if (!acc.CheckPassword(newPassword))
+            // 2. Skicka verifieringskod (Samma logik som vid 2FA)
+            bool sent = false;
+            await UI.WithStatusAsync("Sending verification code...", async () =>
             {
-                UI.Error("New password does not meet the requirements.");
-                Logg.Log($"Password reset failed for '{username}': Password did not meet requirements.");
+                // Här anropas metoden som genererar koden, hashar den och skickar mailet
+                sent = await _twoFactor.SendEmailCodeAsync(acc, "Password Reset Code");
+            });
+
+            if (!sent)
+            {
+                UI.Error("Failed to send email. Please try again later.");
                 return;
             }
 
-            UI.WithStatus("Updating password...", () =>
+            // VIKTIGT: Spara kontot så att den nya hashen (koden) sparas i "databasen"
+            AccountStore.Update(acc);
+            AccountStore.Save();
+
+            UI.Success($"A verification code has been sent to the email you registered.");
+
+            // 3. Verifiera koden
+            bool verified = false;
+            for (int attempt = 1; attempt <= 3; attempt++)
             {
-                acc.Password = newPassword;
+                var code = AnsiConsole.Prompt(
+                    new TextPrompt<string>($"[yellow]Enter the 6-digit code (attempt {attempt}/3):[/] ")
+                );
+
+                // VerifyCode kollar input mot den hash som precis sparades
+                if (_twoFactor.VerifyCode(acc, code))
+                {
+                    verified = true;
+                    _twoFactor.ClearPending(acc); // Rensa koden så den inte kan användas igen
+                    break;
+                }
+                UI.Warn("Wrong code.");
+            }
+
+            if (!verified)
+            {
+                UI.Error("Too many failed attempts. Password reset cancelled.");
+                return;
+            }
+
+            // 4. Byt lösenord
+            string newPass; // Vi deklarerar variabeln utanför loopen så vi kan använda den efteråt
+
+            while (true)
+            {
+                newPass = AnsiConsole.Prompt(
+                    new TextPrompt<string>("Enter new password:").Secret()
+                );
+
+                var confirmPass = AnsiConsole.Prompt(
+                    new TextPrompt<string>("Confirm new password:").Secret()
+                );
+
+                // Kontroll 1: Matchar lösenorden?
+                if (newPass != confirmPass)
+                {
+                    UI.Error("Passwords do not match. Please try again.");
+                    continue; // Hoppar tillbaka till början av while-loopen
+                }
+
+                // Kontroll 2: Uppfyller lösenordet kraven?
+                if (!acc.CheckPassword(newPass))
+                {
+                    UI.Error("Password requirements not met (min 6 chars, upper, lower, number, special).");
+                    continue; // Hoppar tillbaka till början av while-loopen
+                }
+
+                // Om vi kommer hit är allt korrekt!
+                break; // Bryter loopen och fortsätter koden nedanför
+            }
+
+            UI.WithStatus("Saving new password...", () =>
+            {
+                acc.Password = newPass;
+                // Generera en ny recovery code så användaren har en fräsch
                 acc.RecoveryCode = Util.GenerateRecoveryCode();
+
                 AccountStore.Update(acc);
                 AccountStore.Save();
             });
 
-            UI.Success("Password reset! A new recovery code has been generated.");
+            UI.Success("Password successfully reset! You can now login.");
+            Logg.Log($"User {acc.UserName} reset their password via email verification.");
         }
     }
 }

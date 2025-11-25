@@ -37,7 +37,7 @@ namespace Travel_Journal.UIServices
             UI.Splash();
             return AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"[bold cyan]Welcome, {username}![/] Choose an option:")
+                    .Title($"[bold cyan]Welcome, {username}![/]")
                     .HighlightStyle(new Style(Color.Cyan1))
                     .AddChoices(
                         "👤 View Profile",

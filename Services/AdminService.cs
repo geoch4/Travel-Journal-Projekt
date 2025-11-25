@@ -12,8 +12,6 @@ namespace Travel_Journal.Services
 {
     public class AdminService
     {
-        private readonly DataStore<Account> _accountStore;
-    
         public void ShowAllUsers()
         {
             var accounts = AccountStore.GetAll();

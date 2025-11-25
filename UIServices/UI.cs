@@ -18,7 +18,7 @@ namespace Travel_Journal.UIServices
             AnsiConsole.Clear();
             AnsiConsole.Write(new FigletText("Travel Journal").Centered().Color(Color.MediumPurple));
             AnsiConsole.Write(new Rule("[grey] Team 1 — Code Commanders[/]").LeftJustified());
-            TypeOut("Welcome! Navigate using the menu below.");
+            TypeOut("Navigate using the menu below.");
         }
 
         // Metod för att visa profil
@@ -38,7 +38,6 @@ namespace Travel_Journal.UIServices
             t.AddRow("Created:", account.CreatedAt == default
                 ? "—"
                 : account.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
-            t.AddRow("Recovery Code:", account.RecoveryCode);
             t.AddRow("Savings:", $"{account.Savings} kr");
 
             // Skriv ut tabellen i terminalen
@@ -71,12 +70,21 @@ namespace Travel_Journal.UIServices
                 });
         }
 
-        // Overload som returnerar data.
-        public static T WithStatus<T>(string message, Func<T> action)
+        // ============================
+        //    NY METOD: ASYNC STATUS (För e-post mm.)
+        // ============================
+
+        // Denna variant tar emot en Func<Task> istället för Action,
+        // vilket gör att vi kan använda "await" inuti den.
+        public static async Task WithStatusAsync(string text, Func<Task> action)
         {
-            T result = default!;
-            WithStatus(message, () => { result = action(); });
-            return result;
+            await AnsiConsole.Status()
+                .Spinner(Spinner.Known.Dots2)
+                .StartAsync(text, async ctx =>
+                {
+                    // Här väntar vi på att jobbet (t.ex. skicka mail) blir klart
+                    await action();
+                });
         }
 
         // ============================

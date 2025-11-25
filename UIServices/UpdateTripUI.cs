@@ -240,6 +240,7 @@ namespace Travel_Journal.UIServices
             if (!trips.Any())
             {
                 AnsiConsole.MarkupLine("[yellow]No trips to delete.[/]");
+                UI.Pause();
                 return;
             }
 
