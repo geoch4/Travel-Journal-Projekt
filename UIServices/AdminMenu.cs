@@ -8,8 +8,10 @@ using Travel_Journal.Services;
 
 namespace Travel_Journal.UIServices
 {
+    // Klass för adminmenu
     public static class AdminMenu
     {
+        // Detta är admin menyn
         public static void ShowAdminMenu(AdminService adminService)
         {
             while (true)
@@ -27,7 +29,7 @@ namespace Travel_Journal.UIServices
                             "↩ Back"
                         })
                 );
-
+                
                 switch (choice)
                 {
                     case "👥 View all users":

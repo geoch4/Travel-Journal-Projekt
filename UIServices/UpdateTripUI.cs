@@ -133,6 +133,7 @@ namespace Travel_Journal.UIServices
             );
         }
 
+        // Metod för att uppdatera kostnad på en resa
         public void UpdateCost()
         {
             UpdateTripProperty<decimal>("Cost",
@@ -155,6 +156,7 @@ namespace Travel_Journal.UIServices
             );
         }
 
+        // Metod för att uppdatera betyg på en resa
         public void UpdateRating()
         {
             UpdateTripProperty<int>("Rating",

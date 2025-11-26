@@ -16,8 +16,6 @@ namespace Travel_Journal.UIServices
 {
     public static class MenuService // Statisk klass för menyer
     {
-        //private readonly DataStore<Account> _accountStore;
-
         // Visar en interaktiv meny där användaren väljer vad den vill göra.
         // Huvudmenyn
         public static string MainMenu()

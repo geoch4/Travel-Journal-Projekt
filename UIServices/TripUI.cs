@@ -267,6 +267,7 @@ namespace Travel_Journal.UIServices
             // Hämta datan från servicen
             var trips = _service.GetAllTrips();
 
+            // Om ingen resa hittas
             if (!trips.Any())
             {
                 UI.Warn("No trips found for this account.");
@@ -304,7 +305,7 @@ namespace Travel_Journal.UIServices
                 table.AddColumn("[bold cyan]Rating[/]");
                 table.AddColumn("[bold cyan]Review[/]");
                 table.AddColumn("[bold cyan]Pax[/]");
-
+                
                 foreach (var trip in tripList)
                 {
                     string dateRange = $"{trip.StartDate:yyyy-MM-dd} → {trip.EndDate:yyyy-MM-dd}";

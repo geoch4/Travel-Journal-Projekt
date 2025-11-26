@@ -5,6 +5,7 @@ using Travel_Journal.Models;
 
 namespace Travel_Journal.UIServices
 {
+    // Klass för UI/UserInterface
     public static class UI
     {
         // ============================
@@ -166,6 +167,7 @@ namespace Travel_Journal.UIServices
                     .PromptStyle("white")
             );
 
+            // Låter användaren gå tillbaka genom att trycka på b, oavsett stor eller liten bokstav.
             if (input.Trim().Equals("b", StringComparison.OrdinalIgnoreCase))
             {
                 Logg.Log($"User pressed B → Back to menu from '{prompt}'");
@@ -268,6 +270,7 @@ namespace Travel_Journal.UIServices
         {
             AnsiConsole.MarkupLine("[grey]← Press [red]0[/] to go back one step[/]");
 
+            // Läs in användarens input
             var input = AnsiConsole.Ask<string>($"{prompt}:");
 
             if (input.Trim() == "0")
@@ -275,7 +278,7 @@ namespace Travel_Journal.UIServices
                 Logg.Log($"User pressed 0 → Step back from decimal prompt '{prompt}'");
                 return null;
             }
-
+            // Försök konvertera till decimal
             if (!decimal.TryParse(input, out var val))
             {
                 Logg.Log($"Invalid decimal input '{input}' for '{prompt}'");
@@ -319,6 +322,7 @@ namespace Travel_Journal.UIServices
                 Logg.Log($"User pressed 0 → Step back from int prompt '{prompt}'");
                 return null;
             }
+            // Försök konvertera till int
             if (!int.TryParse(input, out var val))
             {
                 Logg.Log($"Invalid integer input '{input}' for '{prompt}'");
@@ -349,6 +353,7 @@ namespace Travel_Journal.UIServices
 
             return val;
         }
+        // Metod för att läsa ett heltal med felhantering och loggning
         public static int AskInt(string prompt)
         {
             // Läs in rå text
