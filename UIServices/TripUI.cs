@@ -233,6 +233,12 @@ namespace Travel_Journal.UIServices
                 Review = review
             };
 
+            var notificationService = new NotificationService();//skapar ett nytt objekt och lagrar den i en variabel
+            var notificationType = notificationService.AssessBudgetOutcome(newTrip.PlannedBudget, newTrip.Cost);// Använder servicen för att bedöma budgetutfallet
+                                                                                                                // Detta tar hand om inputen-vad som kommer in
+            NotificationUI.ShowBudgetNotification(notificationType, newTrip.PlannedBudget, newTrip.Cost);//Använder NotificationUI för att visa meddelandet
+                                                                                                         //Detta tar hand om outputen...vad som användaren ser
+
             SaveTripSafe(newTrip, $"Previous trip to {city}, {country} saved successfully!");
         }
 
