@@ -102,6 +102,7 @@ namespace Travel_Journal.Services
                 return false;
             }
         }
+        // === ❓ FAQ - Vanliga frågor och svar ===
         public void FAQInfo()
         {
             AnsiConsole.MarkupLine("[yellow][b]Frequently Asked Questions[/][/]\n");
@@ -123,13 +124,13 @@ namespace Travel_Journal.Services
 
             AnsiConsole.MarkupLine("[yellow]If you have additional questions, please contact our support team.[/]");
         }
-
+        // === 📧 Kontaktinformation för support ===
         public void EmailInfo()
         {
             AnsiConsole.MarkupLine("You can reach us at: [bold aqua]codecommanders25@gmail.com[/]");
             AnsiConsole.MarkupLine("\n[grey]Our team will review your inquiry and respond as promptly as possible.[/]");
         }
-
+        // === 📜 Villkor & Integritetspolicy ===
         public void TermsAndPrivacy()
         {
             AnsiConsole.MarkupLine(@"

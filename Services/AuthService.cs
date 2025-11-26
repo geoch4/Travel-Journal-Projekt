@@ -9,6 +9,7 @@ using Travel_Journal.UIServices;
 
 namespace Travel_Journal.Services
 {
+    // En tjänst för autentisering och kontohantering
     public class AuthService
     {
         private readonly TwoFactorService _twoFactor;
@@ -19,7 +20,7 @@ namespace Travel_Journal.Services
             _twoFactor = new TwoFactorService(new SmtpEmailSender());
             SeedAdmin();
         }
-
+        // Skapar en standard admin-användare om ingen finns
         private void SeedAdmin()
         {
             var all = AccountStore.GetAll();
@@ -217,7 +218,7 @@ namespace Travel_Journal.Services
                         UI.Success($"Logged in as [bold]{username}[/]! ✈️");
                         return acc;
                     }
-                    // 🔥Logga BARA felförsök
+                    // Logga BARA felförsök
                     Logg.Log($"2FA failed attempt {attempt}/3 for user '{username}'.");
                 }
 

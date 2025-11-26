@@ -7,6 +7,7 @@ using Travel_Journal.UIServices;
 
 namespace Travel_Journal.Services
 {
+    // Tjänst för budgethantering och hantera resebudgetar och drömresa
     public class BudgetService
     {
         private readonly Account _account;
@@ -122,7 +123,7 @@ namespace Travel_Journal.Services
             AnsiConsole.Write(table);
             UI.Pause();
         }
-
+        // === Hantera drömresa ===
         public void DreamVacation()
         {
             AnsiConsole.Clear();
@@ -138,7 +139,7 @@ namespace Travel_Journal.Services
 
             CreateOrUpdateDreamVacation(); // Skapa ny drömresa om ingen finns
         }
-
+        // Visa befintlig drömresa
         private void ShowExistingDreamVacation()
         {
             // Beräkna saknad summa
@@ -152,7 +153,7 @@ namespace Travel_Journal.Services
             {
                 statusText = "You already have enough savings! 🎉";
                 statusColor = "green";
-                missingAmount = 0; // Ingen skuld
+                missingAmount = 0; // man har tillräckligt med pengar för resan
             }
             else
             {
@@ -193,7 +194,7 @@ namespace Travel_Journal.Services
             }
         }
 
-
+        // Skapa eller uppdatera drömresa
         private void CreateOrUpdateDreamVacation()
         {
             // Fråga om destination

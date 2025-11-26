@@ -8,11 +8,13 @@ using Travel_Journal.Models;
 
 namespace Travel_Journal.Services
 {
+    // Email för tvåfaktorsautentisering
     public class TwoFactorService
     {
         private readonly IEmailSender _emailSender;
         public TwoFactorService(IEmailSender emailSender) => _emailSender = emailSender;
 
+        // / Genererar en numerisk kod med angivet antal siffror (digits) 6 som standard
         public string GenerateNumericCode(int digits = 6)
         {
             // Kryptografiskt säkert
@@ -20,7 +22,9 @@ namespace Travel_Journal.Services
             uint v = BitConverter.ToUInt32(bytes, 0) % (uint)Math.Pow(10, digits);
             return v.ToString(new string('0', digits));
         }
-
+        // Den tar en text och gör om den till en SHA-256-hash
+        // / Detta används för att säkert lagra verifieringskoder
+        // en hash är en unik kod som inte går att göra tillbaka till text
         public static string Sha256(string input)
         {
             using var sha = SHA256.Create();
@@ -28,6 +32,7 @@ namespace Travel_Journal.Services
             return Convert.ToHexString(bytes);
         }
 
+        // Skickar en verifieringskod via e-post till användaren
         public async Task<bool> SendEmailCodeAsync(Account acc, string purpose = "Your verificationcode")
         {
             if (string.IsNullOrWhiteSpace(acc.Email))
@@ -47,6 +52,7 @@ namespace Travel_Journal.Services
             return true;
         }
 
+        // Verifierar att den inmatade koden matchar den sparade hashen och inte har gått ut
         public bool VerifyCode(Account acc, string inputCode)
         {
             if (acc.PendingTwoFactorExpiresUtc is null || acc.PendingTwoFactorExpiresUtc < DateTime.UtcNow)
@@ -56,6 +62,7 @@ namespace Travel_Journal.Services
             return string.Equals(hash, acc.PendingTwoFactorCodeHash, StringComparison.OrdinalIgnoreCase);
         }
 
+        // Rensar den sparade koden och utgångstiden från kontot
         public void ClearPending(Account acc)
         {
             acc.PendingTwoFactorCodeHash = null;

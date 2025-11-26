@@ -10,10 +10,13 @@ using Travel_Journal.UIServices;
 
 namespace Travel_Journal.Services
 {
+    // Tjänst för admin-specifika funktioner
     public class AdminService
     {
+        // Visa alla användare i en tabell
         public void ShowAllUsers()
         {
+            // Hämta alla användare från AccountStore
             var accounts = AccountStore.GetAll();
 
             if (!accounts.Any())
@@ -22,7 +25,7 @@ namespace Travel_Journal.Services
                 UI.Pause();
                 return;
             }
-
+            // Skapa en tabell med Spectre.Console
             var table = new Table()
                 .Border(TableBorder.Rounded)
                 .BorderColor(Color.Grey50)
@@ -31,17 +34,19 @@ namespace Travel_Journal.Services
             table.AddColumn("[cyan]Username[/]");
             table.AddColumn("[cyan]Admin[/]");
 
+            // Lägg till varje användare som en rad i tabellen
             foreach (var acc in accounts)
             {
                 table.AddRow(
                     acc.UserName ?? "-",
-                    acc.IsAdmin ? "[green]Yes[/]" : "[grey]No[/]"
+                    acc.IsAdmin ? "[green]Yes[/]" : "[grey]No[/]" // den funkar som en if sats
                 );
             }
 
             AnsiConsole.Write(table);
             UI.Pause();
         }
+        // Radera en användare bara om det är en admin
         public void DeleteUser()
         {
             // Visa först alla användare i en tabell
@@ -62,11 +67,12 @@ namespace Travel_Journal.Services
             table.AddColumn("[cyan]Username[/]");
             table.AddColumn("[cyan]Admin[/]");
 
+            // Lägg till varje användare som en rad i tabellen
             foreach (var acc in accounts)
             {
                 table.AddRow(
                     acc.UserName ?? "-",
-                    acc.IsAdmin ? "[green]Yes[/]" : "[red]No[/]"
+                    acc.IsAdmin ? "[green]Yes[/]" : "[red]No[/]" // den funkar som en if sats
                 );
             }
 
@@ -76,6 +82,7 @@ namespace Travel_Journal.Services
             // Nu frågar vi vem som ska raderas
             var username = AnsiConsole.Ask<string>("[red]Enter username of user to delete:[/]");
 
+            // Hitta kontot baserat på användarnamnet
             var account = accounts.FirstOrDefault(a => a.UserName == username);
 
             if (account == null)
@@ -85,6 +92,7 @@ namespace Travel_Journal.Services
                 return;
             }
 
+            // Försäkra att admin-konton inte kan raderas härifrån
             if (account.IsAdmin)
             {
                 UI.Error("You cannot delete an admin account from here (for safety).");

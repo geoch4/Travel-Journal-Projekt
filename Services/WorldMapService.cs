@@ -5,15 +5,18 @@ using Travel_Journal.UIServices;
 
 namespace Travel_Journal.Services
 {
+    // Tjänst för att generera och visa en världskarta med besökta länder som dom tar från listorna i TripService
     public class WorldMapService
     {
         private readonly TripService _tripService;
 
+        // / === Konstruktor ===
         public WorldMapService(TripService tripService)
         {
             _tripService = tripService;
         }
 
+        // / Öppnar världskartan i webbläsaren
         public void OpenWorldMap()
         {
             // === 1. Projektets rotmapp ===

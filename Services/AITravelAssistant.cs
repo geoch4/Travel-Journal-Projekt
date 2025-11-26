@@ -15,7 +15,8 @@ namespace Travel_Journal.Services
     /// </summary>
     public class AITravelAssistant
     {
-        // HttpClient används för att skicka HTTP-anrop till OpenAI:s API
+        // http klient är verktyget för att skicka anrop till webbtjänsten
+        // vi använder private readonly för att den bara ska användas inom denna klass
         private readonly HttpClient _httpClient;
 
         // API-nyckeln hämtas från miljövariabeln "API_KEY"
