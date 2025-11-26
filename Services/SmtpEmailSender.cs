@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
-using Travel_Journal.Email;
+using Travel_Journal.Interfaces;
 
 namespace Travel_Journal.Services
 {

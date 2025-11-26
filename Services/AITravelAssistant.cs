@@ -51,8 +51,10 @@ namespace Travel_Journal.Services
         {
             // Här bygger vi själva frågan (prompten) som skickas till AI:n
             // Den innehåller all information användaren angivit
+            // Jag antar att detta är C# baserat på syntaxen ($@" ... "), men principen är densamma för alla språk.
+
             var prompt = $@"
-You are an experienced travel planner AI.
+You are an experienced, enthusiastic travel planner AI.
 
 Your task:
 Suggest exactly ONE travel destination that fits the traveler's budget, trip type and duration.
@@ -64,30 +66,39 @@ Budget: {budget} SEK
 Trip type: {tripType}
 Duration: {durationDays} days
 
-Write the answer in clear English and use markdown with this exact structure:
+Write the answer in clear English using Markdown. Structure the response exactly like this:
 
-1) A short intro (2–3 sentences) explaining the overall idea of the trip.
-2) A section called Destination:
-   
-Name of city and country
-Very short explanation why this destination fits the budget and trip type.
+# 🌍 A [Adjective] Trip to [Destination]
 
-3) A section called Itinerary with {durationDays} days:
-   For each day, use this format:
+1) A short, engaging intro (2–3 sentences).
 
-   Day X: Title of the day
-   Morning: ...
-   Afternoon: ...
-   Evening: ...
+---
 
-4) A section called Why this trip fits the traveler:
-   
-2–4 bullet points that connect the destination and activities to the budget and trip type.
+## 📍 Destination: [City, Country]
+Very short explanation why this fits the budget and trip type.
 
-Important:
-Keep the tone friendly and inspiring, but not cheesy.
-Stay within a realistic budget for someone with {budget} SEK.
-Do not ask the user follow-up questions.
+---
+
+## 📅 Itinerary: [Duration] Days
+
+(Repeat this block for each day)
+### Day X: [Title of the day]
+* **Morning:** ...
+* **Afternoon:** ...
+* **Evening:** ...
+
+---
+
+## ✅ Why this fits you:
+* 💎 **Budget:** [Point about cost]
+* 🚶 **Accessibility:** [Point about navigation/transport]
+* 🎨 **Experience:** [Point about culture/activities]
+
+Important constraints:
+- Use emojis to make headers and lists visual and friendly.
+- Use horizontal rules (---) to separate main sections.
+- Keep the tone friendly and inspiring.
+- Do not ask follow-up questions.
 ";
             // Spinner-animation i terminalen (visar att AI:n "tänker")
             return await AnsiConsole.Status()
@@ -155,22 +166,27 @@ Do not ask the user follow-up questions.
 
             // Be användaren om resepreferenser
             var budgetstring = UI.AskWithBack("What is your [bold]budget[/] in SEK?");
-            if (budgetstring == null)
-                return; // eller gå till föregående meny
+
+            if (budgetstring == null) return; // eller gå till föregående meny
+
+            // Konvertera budgetsträngen till decimal
             decimal budget = decimal.Parse(budgetstring);
+
+            // Be användaren om typ av resa
             var type = AnsiConsole.Ask<string>("What kind of [blue]trip[/] do you want? (e.g. city, beach, adventure, culture)");
+
+            // Be användaren om reslängd i dagar
             var days = UI.AskInt("How many [yellow]days[/] do you plan to travel?");
 
-            // Skapa AI-klassen och hämta förslag från OpenAI
-            var ai = new AITravelAssistant();
-            string suggestion = await ai.GetTravelSuggestionAsync(budget, type, days);
+            // Hämta reseförslaget från AI:n
+            string suggestion = await GetTravelSuggestionAsync(budget, type, days);
 
             // Visa resultatet i en snygg panel med färg och ram
             var panel = new Panel($"[white]{suggestion}[/]")
             {
                 Header = new PanelHeader("🌍 Your AI Travel Suggestion"),
                 Border = BoxBorder.Rounded,
-                BorderStyle = new Style(Color.Cyan1)
+                BorderStyle = new Style(Color.Aqua)
             };
             AnsiConsole.Write(panel);
         }

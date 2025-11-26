@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Travel_Journal.Email
+namespace Travel_Journal.Interfaces
 {
     public interface IEmailSender
     {

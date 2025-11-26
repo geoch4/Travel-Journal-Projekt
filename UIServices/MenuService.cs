@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Travel_Journal.Data;
 using Travel_Journal.Models;
 using Travel_Journal.Services;
-using Travel_Journal.UIServices;
 
 namespace Travel_Journal.UIServices
 {
@@ -22,7 +21,7 @@ namespace Travel_Journal.UIServices
         {
             return AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[bold cyan]Choose:[/]")
+                    .Title("[bold cyan]🔎 Select an Option[/]")
                     .HighlightStyle(new Style(Color.DeepSkyBlue1))
                     .AddChoices("Register", "Login", "Forgot password", "Exit")
             );
@@ -53,7 +52,7 @@ namespace Travel_Journal.UIServices
         }
 
         // Statistik meny
-        public static void StatsMenu(Statistics stats)
+        public static void StatsMenu(StatisticsUI stats)
         {
             while (true) // 🔄 loopar tills användaren väljer "Back"
             {

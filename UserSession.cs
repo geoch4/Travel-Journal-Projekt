@@ -31,7 +31,7 @@ namespace Travel_Journal.Services
 
         // Förifyllda services för att slippa new i switchen
         private readonly BudgetService _budget;
-        private readonly Statistics _stats;
+        private readonly StatisticsUI _stats;
         private readonly SupportService _support;
         private readonly WorldMapService _map;
 
@@ -50,7 +50,7 @@ namespace Travel_Journal.Services
 
             // Initiera alla services som behövs i sessionen
             _budget = new BudgetService(account, _tripService);
-            _stats = new Statistics(_tripService);
+            _stats = new StatisticsUI(_tripService);
             _support = new SupportService();
             _map = new WorldMapService(_tripService);
         }

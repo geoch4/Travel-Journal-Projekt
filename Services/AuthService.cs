@@ -3,7 +3,7 @@ using Spectre.Console;
 using System;
 using System.Threading.Tasks;
 using Travel_Journal.Data;
-using Travel_Journal.Email;
+using Travel_Journal.Interfaces;
 using Travel_Journal.Models;
 using Travel_Journal.UIServices;
 
