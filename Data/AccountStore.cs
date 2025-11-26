@@ -13,8 +13,6 @@ namespace Travel_Journal.Data
     {
         private static List<Account> accounts = new();
 
-        internal static object Accounts;
-
         public static void LoadWithProgress()
         {
             // Skapar datamappen om den inte redan finns
@@ -36,13 +34,13 @@ namespace Travel_Journal.Data
                 .Start(ctx =>
                 {
                     // Skapar en ny uppgift ("task") för att representera laddningen
-                    var t = ctx.AddTask("Loading user", maxValue: 100);
+                    var t = ctx.AddTask("🧭 Preparing your travel profile", maxValue: 100);
 
                     // Simulerar laddning i steg om 25%, med kort paus mellan varje
                     for (int i = 0; i <= 100; i += 25)
                     {
                         t.Value = i; // Uppdaterar progressens nuvarande värde
-                        Thread.Sleep(60); // Väntar 60 millisekunder för visuell effekt
+                        Thread.Sleep(500); // Väntar 60 millisekunder för visuell effekt
                     }
 
                     // Om användarfilen existerar, läs in den
@@ -94,6 +92,7 @@ namespace Travel_Journal.Data
             if (idx >= 0) accounts[idx] = acc;
         }
 
+        // Hämtar alla konton i listan hjälper för bland annat för Admin-funktionalitet/Panel
         public static List<Account> GetAll()
         {
             return accounts;

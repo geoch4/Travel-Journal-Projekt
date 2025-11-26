@@ -13,14 +13,16 @@ namespace Travel_Journal.Models
 {
     public class Statistics
     {
-        //SKapa en metod som sorterar resor efter betyg.
+        //Skapa en metod som sorterar resor efter betyg.
         private readonly TripService _tripService;
 
+        // Konstruktor som tar emot TripService via dependency injection
         public Statistics(TripService tripService)
         {
             _tripService = tripService;
         }
 
+        //Metod som sorterar resor från högsta till lägsta betyg vi använder LINQ för att sortera listan.
         public void SortTripsByRatingDescending()
         {
             AnsiConsole.Clear();
@@ -39,6 +41,7 @@ namespace Travel_Journal.Models
                 AnsiConsole.MarkupLine($"Country: {trip.Country}, Score: {trip.Score}, Cost: {trip.Cost}");
             }
         }
+        //Skapa en metod som sorterar resor från lägsta till högsta betyG vi använder LINQ för att sortera listan.
         public void SortTripsByRatingAscending()
         {
             AnsiConsole.Clear();

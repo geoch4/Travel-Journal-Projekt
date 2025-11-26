@@ -3,6 +3,7 @@ using System.IO;
 
 namespace Travel_Journal.Data
 {
+    // Statisk klass för att hantera filvägar i applikationen
     public static class Paths
     {
         // Bas-katalog (där .exe körs)

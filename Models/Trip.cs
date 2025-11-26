@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Travel_Journal.Models
 {
+    // Modell för en resa i resejournalen
+    // Innehåller information som land, stad, kostnad, datum, antal personer, betyg, kommentar och budget
+    // Inkluderar även hjälpegenskaper för att avgöra om resan är kommande eller avslutad
     public class Trip
     {
        
@@ -16,8 +19,8 @@ namespace Travel_Journal.Models
         public string Review { get; set; }                 // Kommentar eller minne
         public decimal PlannedBudget { get; set; }         // Planerad budget
 
-       
 
+        // Detta för att avgöra om resan är kommande eller avslutad
         // Hjälpegenskaper
         public bool IsUpcoming => StartDate > DateTime.Now;
         public bool IsCompleted => EndDate < DateTime.Now;

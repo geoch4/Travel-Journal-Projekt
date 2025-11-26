@@ -10,6 +10,7 @@ namespace Travel_Journal.Data
     // En generisk klass som kan läsa/spara valfri lista av objekt till JSON.
     public class DataStore<T>
     {
+        // Filsökväg för den specifika datatypen, t.ex. "data/andre_trips.json"
         private readonly string _filePath;
 
         public DataStore(string fileName)
@@ -19,12 +20,6 @@ namespace Travel_Journal.Data
 
             // Bygg hela filsökvägen, t.ex. "data/andre_trips.json"
             _filePath = Path.Combine(Paths.DataDir, fileName);
-        }
-
-        private List<T> _items = new();
-        public List<T> GetAll()
-        {
-            return _items;
         }
 
         // Spara listan till JSON-fil
@@ -42,7 +37,7 @@ namespace Travel_Journal.Data
             }
         }
 
-        // Läs in listan från JSON-fil
+        // Läser in listan från JSON-fil med felhantering
         public List<T> Load()
         {
             if (!File.Exists(_filePath))
