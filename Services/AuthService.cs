@@ -24,7 +24,7 @@ namespace Travel_Journal.Services
         private void SeedAdmin()
         {
             var all = AccountStore.GetAll();
-            if (all.Any(all => all.IsAdmin))
+            if (all.Any(a => a.IsAdmin))
                 return;
             var acc = new Account
             {
@@ -41,30 +41,60 @@ namespace Travel_Journal.Services
         }
 
         // === NY === Registrering med e-postverifiering (Spectre + 2FA-val)
-        public async Task<bool> RegisterWithEmailVerificationAsync(string username, string password)
+        public async Task<bool> RegisterWithEmailVerificationAsync()
         {
-            if (AccountStore.Exists(username))
+            UI.Transition("Register Account");
+
+            var acc = new Account(); // Skapa instansen tidigt för att använda valideringsmetoderna
+            string? username;
+
+            // === LOOP 1: Användarnamn ===
+            // Vi loopar tills vi får ett unikt och giltigt namn eller användaren backar
+            while (true)
             {
-                UI.Warn("User already exists!");
-                Logg.Log($"Attempted registration with existing username {username}");
-                return false;
+                username = UI.AskWithBack("Username");
+                if (username == null) return false; // Användaren valde [Back]
+
+                // 1. Kolla om det redan finns
+                if (AccountStore.Exists(username))
+                {
+                    UI.Warn($"The username '{username}' is already taken. Please try another.");
+                    continue; // Börja om loopen
+                }
+
+                // 2. Kolla format (t.ex. längd)
+                if (!acc.CheckUserName(username))
+                {
+                    UI.Error("Username must be at least 1 character long.");
+                    continue; // Börja om loopen
+                }
+
+                // Om vi kommer hit är namnet OK!
+                break;
             }
 
-            var acc = new Account();
-
-            if (!acc.CheckUserName(username))
+            // === LOOP 2: Lösenord ===
+            // Här är fixen du bad om: Vi loopar tills lösenordet är starkt nog
+            string password;
+            while (true)
             {
-                UI.Error("Username must be at least 1 character long.");
-                Logg.Log($"User {username} trying to register account with less than 1 character");
-                return false;
-            }
-            if (!acc.CheckPassword(password))
-            {
-                UI.Error("Password requirements: min 6 chars, uppercase, lowercase, number, special.");
-                Logg.Log($"Password for {username} doesnt meet the requirements");
-                return false;
+                password = AnsiConsole.Prompt(
+                    new TextPrompt<string>("Password:")
+                        .Secret()
+                );
+
+                if (acc.CheckPassword(password))
+                {
+                    break; // Lösenordet är godkänt, gå vidare
+                }
+
+                // Om lösenordet är för svagt:
+                UI.Error("Weak password! Requirements: min 6 chars, Uppercase, Lowercase, Number, Special.");
+                Logg.Log($"User {username} failed password validation.");
+                // Loopen körs automatiskt igen härifrån
             }
 
+            // === 3. E-post (Spectre.Console .Validate sköter loopen här) ===
             var email = AnsiConsole.Prompt(
                 new TextPrompt<string>("[cyan]Enter your email for verification:[/] ")
                     .Validate(input =>
@@ -73,6 +103,7 @@ namespace Travel_Journal.Services
                             : ValidationResult.Success())
             );
 
+            // Sätt data på kontot
             acc.UserName = username;
             acc.Password = password;
             acc.Email = email;
@@ -80,15 +111,14 @@ namespace Travel_Journal.Services
             acc.TwoFactorEnabled = false;
             acc.CreatedAt = DateTime.UtcNow;
 
-            // Skicka verifikationskod (wrappar utan WithStatusAsync)
+            // === 4. Skicka verifikationskod ===
             bool sent = false;
             UI.WithStatus("Sending verification email...", () =>
             {
                 try
                 {
-                    // blockera sync i status-lambdan (ingen await här)
                     sent = _twoFactor.SendEmailCodeAsync(acc, "Verify your email")
-                                     .GetAwaiter().GetResult();
+                                   .GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {
@@ -100,14 +130,18 @@ namespace Travel_Journal.Services
 
             if (!sent) return false;
 
+            // === 5. Verifiera kod (Loop 3 försök) ===
             bool verified = false;
+            // Loop för att skriva in koden (3 försök) 
             for (int attempt = 1; attempt <= 3; attempt++)
             {
+                // Fråga efter koden
                 var code = AnsiConsole.Prompt(
                     new TextPrompt<string>($"[yellow]Enter the 6-digit code (attempt {attempt}/3):[/]")
                         .PromptStyle("white")
                 );
 
+                // Kontrollera koden mot den sparade hashen i TwoFactorService
                 if (_twoFactor.VerifyCode(acc, code))
                 {
                     verified = true;
@@ -128,12 +162,14 @@ namespace Travel_Journal.Services
             acc.EmailVerified = true;
             _twoFactor.ClearPending(acc);
 
+            // Spara konto
             UI.WithStatus("Saving account...", () =>
             {
                 AccountStore.Add(acc);
                 AccountStore.Save();
             });
 
+            // Fråga om 2FA vid inloggning
             var enable2fa = AnsiConsole.Confirm("Enable email 2FA for login?");
             if (enable2fa)
             {
@@ -142,37 +178,74 @@ namespace Travel_Journal.Services
                 AccountStore.Save();
             }
 
+            // Visa framgång
             var panel = new Panel($"""
-            [green]✅ User {acc.UserName} created & email verified![/]
-            [grey]2FA enabled:[/] {(acc.TwoFactorEnabled ? "[green]Yes[/]" : "[yellow]No[/]")}
-            """)
+    [green]✅ User {acc.UserName} created & email verified![/]
+    [grey]2FA enabled:[/] {(acc.TwoFactorEnabled ? "[green]Yes[/]" : "[yellow]No[/]")}
+    """)
             {
                 Border = BoxBorder.Rounded,
                 Header = new PanelHeader("Registration Successful", Justify.Center)
             };
             AnsiConsole.Write(panel);
+            UI.Pause();
 
             return true;
         }
 
-        // === UPPDATERAD === Inloggning med villkorlig 2FA (endast EN definition)
-        public Account? Login(string username, string password)
+        // Metod för inloggning 
+        public Account? Login()
         {
-            var acc = AccountStore.Get(username);
+            UI.Transition("Login"); // Visa rubrik
 
-            if (acc == null)
+            Account? acc = null;
+            string? username = null;
+
+            // === LOOP 1: Hitta användaren ===
+            while (true)
             {
+                // Fråga efter användarnamn (med möjlighet att backa)
+                username = UI.AskWithBack("Username");
+
+                // Om användaren väljer att backa
+                if (username == null) return null;
+
+                // Försök hämta kontot
+                acc = AccountStore.Get(username);
+
+                // Om kontot hittades -> Gå vidare till lösenord
+                if (acc != null)
+                {
+                    break;
+                }
+
+                // Annars, visa fel och loopa igen
                 UI.Error("Unknown username.");
-                Logg.Log($"Login failed: Unknown User ´{username}´");//Logg för Unknown User
-                return null;
+                Logg.Log($"Login failed: Unknown User '{username}'");
             }
 
-            if (!(acc.UserName == username && acc.Password == password))
+            // === LOOP 2: Kontrollera lösenord ===
+            // Här loopar vi tills användaren skriver RÄTT lösenord.
+            while (true)
             {
-                UI.Error("Wrong username or password.");
-                Logg.Log($"Login failed:Wrong password for ´{username}`"); //Logg för fel password
-                return null; 
+                // Fråga efter lösenord
+                var password = AnsiConsole.Prompt(
+                    new TextPrompt<string>("Password:")
+                        .Secret()
+                );
+
+                // Kontrollera om lösenordet stämmer
+                if (acc.Password == password)
+                {
+                    break; // Rätt lösenord! Gå vidare till 2FA/Inloggning
+                }
+
+                // Fel lösenord -> Visa fel och låt loopen köra igen
+                UI.Error("Wrong password.");
+                Logg.Log($"Login failed: Wrong password for '{acc.UserName}'");
             }
+
+            // === 2FA Logik (Oförändrad, men använder nu 'acc' vi hämtade ovan) ===
 
             // Kräver 2FA?
             if (acc.TwoFactorEnabled)
@@ -183,8 +256,10 @@ namespace Travel_Journal.Services
                     acc.TwoFactorEnabled = false;
                     AccountStore.Update(acc);
                     AccountStore.Save();
-                    UI.Success($"Logged in as [bold]{username}[/]! ✈️");
-                    Logg.Log($"User ´{username}´ logged in"); //logg för lyckad inloggning utan 2FA fördjupning
+
+                    // Logga in direkt
+                    UI.Success($"Logging in as [bold]{acc.UserName}[/]! ✈️");
+                    Logg.Log($"User '{acc.UserName}' logged in (2FA disabled by system)");
                     return acc;
                 }
 
@@ -194,7 +269,7 @@ namespace Travel_Journal.Services
                     try
                     {
                         sent = _twoFactor.SendEmailCodeAsync(acc, "Login-code")
-                                         .GetAwaiter().GetResult();
+                                       .GetAwaiter().GetResult();
                     }
                     catch (Exception ex)
                     {
@@ -204,8 +279,9 @@ namespace Travel_Journal.Services
                     }
                 });
 
-                if (!sent) return null;
+                if (!sent) return null; // Om mail misslyckas, avbryt inloggning
 
+                // Loop för att skriva in koden (3 försök)
                 for (int attempt = 1; attempt <= 3; attempt++)
                 {
                     var code = AnsiConsole.Prompt(
@@ -215,11 +291,12 @@ namespace Travel_Journal.Services
                     if (_twoFactor.VerifyCode(acc, code))
                     {
                         _twoFactor.ClearPending(acc);
-                        UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+                        UI.Success($"Logged in as [bold]{acc.UserName}[/]! ✈️");
                         return acc;
                     }
                     // Logga BARA felförsök
-                    Logg.Log($"2FA failed attempt {attempt}/3 for user '{username}'.");
+                    Logg.Log($"2FA failed attempt {attempt}/3 for user '{acc.UserName}'.");
+                    UI.Warn("Wrong code.");
                 }
 
                 UI.Error("Too many attempts.");
@@ -227,13 +304,11 @@ namespace Travel_Journal.Services
                 _twoFactor.ClearPending(acc);
                 return null;
             }
-
-            // Ingen 2FA
-            UI.Success($"Logged in as [bold]{username}[/]! ✈️");
+            // Returnera kontot vid lyckad inloggning utan 2FA
             return acc;
         }
 
-        // === EN (1) definition av ResetPassword ===
+        // === Glömt Lösenord ===
         public async Task ForgotPasswordAsync()
         {
             AnsiConsole.MarkupLine("[yellow]--- Reset Password ---[/]");
@@ -254,17 +329,27 @@ namespace Travel_Journal.Services
                 return;
             }
 
-            // 2. Skicka verifieringskod (Samma logik som vid 2FA)
+            // 2. Skicka verifieringskod
             bool sent = false;
-            await UI.WithStatusAsync("Sending verification code...", async () =>
+            UI.WithStatus("Sending verification code...", () =>
             {
-                // Här anropas metoden som genererar koden, hashar den och skickar mailet
-                sent = await _twoFactor.SendEmailCodeAsync(acc, "Password Reset Code");
+                try
+                {
+                    // Vi tvingar den asynkrona metoden att köras synkront inuti status-snurran
+                    sent = _twoFactor.SendEmailCodeAsync(acc, "Password Reset Code")
+                                   .GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    UI.Error("Failed to send email: " + ex.Message);
+                    Logg.Log($"Failed to send reset email to {username}: {ex.Message}");
+                    sent = false;
+                }
             });
 
             if (!sent)
             {
-                UI.Error("Failed to send email. Please try again later.");
+                // Felmeddelande skrevs redan ut i catch-blocket ovan
                 return;
             }
 
@@ -332,8 +417,6 @@ namespace Travel_Journal.Services
             UI.WithStatus("Saving new password...", () =>
             {
                 acc.Password = newPass;
-                // Generera en ny recovery code så användaren har en fräsch
-                acc.RecoveryCode = Util.GenerateRecoveryCode();
 
                 AccountStore.Update(acc);
                 AccountStore.Save();
@@ -341,6 +424,7 @@ namespace Travel_Journal.Services
 
             UI.Success("Password successfully reset! You can now login.");
             Logg.Log($"User {acc.UserName} reset their password via email verification.");
+            UI.Pause();
         }
     }
 }

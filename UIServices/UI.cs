@@ -72,23 +72,6 @@ namespace Travel_Journal.UIServices
         }
 
         // ============================
-        //    NY METOD: ASYNC STATUS (För e-post mm.)
-        // ============================
-
-        // Denna variant tar emot en Func<Task> istället för Action,
-        // vilket gör att vi kan använda "await" inuti den.
-        public static async Task WithStatusAsync(string text, Func<Task> action)
-        {
-            await AnsiConsole.Status()
-                .Spinner(Spinner.Known.Dots2)
-                .StartAsync(text, async ctx =>
-                {
-                    // Här väntar vi på att jobbet (t.ex. skicka mail) blir klart
-                    await action();
-                });
-        }
-
-        // ============================
         //   MEDDELANDERUTOR
         // ============================
 

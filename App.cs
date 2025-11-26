@@ -40,48 +40,26 @@ namespace Travel_Journal
                 switch (choice)
                 {
                     case "Register":
-                        // === Registrera nytt konto ===
-                        UI.Transition("Register Account"); // Snygg övergångstext
-
-                        // Fråga efter användarnamn och lösenord
-                        var user = UI.AskWithBack("Username");
-                        if (user == null)
-                            break; // eller gå till föregående meny
-                        var pass = AnsiConsole
-                            .Prompt(new TextPrompt<string>("Password:").Secret());
-
-                        ////Frågar efter e-post för verifiering
-                        await auth.RegisterWithEmailVerificationAsync(user, pass);
+                        await auth.RegisterWithEmailVerificationAsync();
                         break;
 
                     case "Login":
-                        // === Logga in på befintligt konto ===
-                        UI.Transition("Login");
+                        // Försöker logga in användaren och få tillbaka ett Account-objekt
+                        var acc = auth.Login();
 
-                        // Fråga användaren om inloggningsuppgifter
-                        var username = UI.AskWithBack("Username");
-                        if (username == null)
-                            break; // eller gå till föregående meny
-                        var p = AnsiConsole
-                            .Prompt(new TextPrompt<string>("Password:").Secret());
-
-                        // Försök hitta matchande konto via AuthService
-                        var acc = auth.Login(username, p);
-
+                        // Om acc är null betyder det att användaren avbröt eller misslyckades
                         if (acc != null)
                         {
-
+                            // Admin-kontroll
                             if (acc.IsAdmin)
-                            { 
+                            {
                                 AdminMenu.ShowAdminMenu(adminService);
                                 break;
                             }
-                            // ✅ Inloggningen lyckades!
-                            // Skapa en UserSession som hanterar allt när användaren är inloggad
-                            var session = new UserSession(acc);
 
-                            // 🕒 Vänta (await) på att sessionen är klar innan huvudmenyn visas igen
-                            // Detta gör att huvudmenyn "pausas" tills användaren loggar ut
+                            // ✅ Inloggningen lyckades!
+                            // Starta sessionen för användaren
+                            var session = new UserSession(acc);
                             await session.Start();
                         }
                         break;
