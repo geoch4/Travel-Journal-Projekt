@@ -108,28 +108,56 @@ namespace Travel_Journal.Services
             AnsiConsole.MarkupLine("[yellow][b]Frequently Asked Questions[/][/]\n");
 
             AnsiConsole.MarkupLine("[bold white]1. How is my data stored?[/]");
-            AnsiConsole.MarkupLine("[grey]All data is saved locally on your device in a secure JSON file. Nothing is uploaded to external servers.[/]\n");
+            AnsiConsole.MarkupLine("[grey]All your data is stored locally on your device in secure JSON files. Nothing is uploaded or synced to external servers.[/]\n");
 
-            AnsiConsole.MarkupLine("[bold white]2. Can I delete my account?[/]");
-            AnsiConsole.MarkupLine("[grey]Yes. You can permanently delete your account and all associated trips through the 'Delete Account' option in the Support menu.[/]\n");
+            AnsiConsole.MarkupLine("[bold white]2. Can I add past trips?[/]");
+            AnsiConsole.MarkupLine("[grey]Yes. You can enter older trips at any time to build a complete travel history.[/]\n");
 
-            AnsiConsole.MarkupLine("[bold white]3. Is my information shared with anyone?[/]");
-            AnsiConsole.MarkupLine("[grey]No. Your information is never shared, distributed, or transmitted elsewhere.[/]\n");
+            AnsiConsole.MarkupLine("[bold white]3. Can I edit or delete a trip after saving it?[/]");
+            AnsiConsole.MarkupLine("[grey]Absolutely. Any trip can be updated or removed directly from the Edit Trip menu.[/]\n");
 
-            AnsiConsole.MarkupLine("[bold white]4. What should I do if I encounter a bug?[/]");
-            AnsiConsole.MarkupLine("[grey]You can report issues through 'Report a Problem' in the Support menu or contact our support team directly.[/]\n");
+            AnsiConsole.MarkupLine("[bold white]4. How does the budget planning work?[/]");
+            AnsiConsole.MarkupLine("[grey]You can plan and set a budget for your dream trip.[/]\n");
 
-            AnsiConsole.MarkupLine("[bold white]5. Can multiple users use the same device?[/]");
-            AnsiConsole.MarkupLine("[grey]Yes. The application supports multiple user accounts on the same device as long as each account is created separately.[/]\n");
+            AnsiConsole.MarkupLine("[bold white]5. Does the app support multiple accounts on one device?[/]");
+            AnsiConsole.MarkupLine("[grey]Yes. Multiple users can create and access their accounts on the same device.[/]\n");
 
-            AnsiConsole.MarkupLine("[yellow]If you have additional questions, please contact our support team.[/]");
+            AnsiConsole.MarkupLine("[bold white]6. Is my personal information shared with anyone?[/]");
+            AnsiConsole.MarkupLine("[grey]No. All data stays locally on your device and is never shared externally.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]7. What happens if I forget my password?[/]");
+            AnsiConsole.MarkupLine("[grey]You can use the 'Forgot Password' feature to reset your password securely.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]8. Why do I have a password recovery option?[/]");
+            AnsiConsole.MarkupLine("[grey]The 'Forgot Password' system allows you to regain access to your account if you ever lose or forget your password.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]9. Can I export my trips or data?[/]");
+            AnsiConsole.MarkupLine("[grey]Not yet, but exporting data (CSV, JSON or PDF) is planned for future updates.[/]\n");
+
+            AnsiConsole.MarkupLine("[bold white]10. How do I contact support?[/]");
+            AnsiConsole.MarkupLine("[grey]You can reach our support team anytime via email: [bold aqua]codecommanders25@gmail.com[/].[/]\n");
+
+            AnsiConsole.MarkupLine("[yellow]If you have additional questions, feel free to contact our support team![/]");
         }
+
         // === 📧 Kontaktinformation för support ===
         public void EmailInfo()
         {
-            AnsiConsole.MarkupLine("You can reach us at: [bold aqua]codecommanders25@gmail.com[/]");
-            AnsiConsole.MarkupLine("\n[grey]Our team will review your inquiry and respond as promptly as possible.[/]");
+            var content =
+                "[white]If you need help or have any questions, you can contact us at:[/]\n\n" +
+                "[bold aqua]codecommanders25@gmail.com[/]\n\n" +
+                "[grey]We do our best to respond as quickly as possible.[/]";
+
+            var panel = new Panel(content)
+            {
+                Border = BoxBorder.Rounded,
+                Padding = new Padding(1, 1),
+                Header = new PanelHeader("[yellow]📩 Contact Support[/]")
+            };
+
+            AnsiConsole.Write(panel);
         }
+
         // === 📜 Villkor & Integritetspolicy ===
         public void TermsAndPrivacy()
         {
