@@ -40,7 +40,7 @@ namespace Travel_Journal.UIServices
             // While-loop möjliggör att användaren kan backa (step--) om de skrivit fel
             while (step < 6)
             {
-                // VIKTIGT: Vi visar headern här, en gång, istället för i varje case.
+                // Visar headern med aktuell data
                 UI.ShowFormHeader("Add Upcoming Trip ✈️", country, city, budget, startDate, endDate, passengers);
 
                 switch (step)
@@ -96,6 +96,8 @@ namespace Travel_Journal.UIServices
                         break;
                 }
             }
+            // Visar slutgiltig header med passengers inkluderat
+            UI.ShowFormHeader("Add Upcoming Trip ✈️", country, city, budget, startDate, endDate, passengers);
 
             // När loopen är klar skapar vi objektet
             var newTrip = new Trip
